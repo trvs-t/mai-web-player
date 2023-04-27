@@ -1,37 +1,26 @@
-import { Container, Graphics, Stage } from "@pixi/react";
-import { Graphics as PixiGraphics } from "pixi.js";
-import { useCallback, useContext } from "react";
-import { PlayerContext } from "./context";
-import { Tap } from "./tap";
+import { getLaneRotationRadian } from "@/utils/lane";
+import { Container, useTick } from "@pixi/react";
+import { useContext } from "react";
+import { PlayerContext } from "./context/context";
+import { TimeControlContext, TimerContext } from "./context/timer";
+import { Ring } from "./view/ring";
+import { Tap } from "./view/tap";
 
 export const Player = () => {
+  const { isPlaying, time } = useContext(TimerContext);
+  const { setTime } = useContext(TimeControlContext);
   const { position, radius } = useContext(PlayerContext);
 
-  const drawRing = useCallback(
-    (g: PixiGraphics) => {
-      g.clear();
-      g.beginFill(0xffffff);
-      g.drawCircle(0, 0, radius);
-      g.beginHole();
-      g.drawCircle(0, 0, radius - radius / 50);
-      g.endHole();
-      new Array(8).fill(0).forEach((_, i) => {
-        const x = Math.cos((13 / 16 - i / 8) * Math.PI * 2) * radius;
-        const y = Math.sin((13 / 16 - i / 8) * Math.PI * 2) * radius;
-        g.drawCircle(x, y, radius / 20);
-      });
-    },
-    [radius]
-  );
+  useTick((_, ticker) => {
+    setTime(time + ticker.deltaMS);
+  }, isPlaying);
 
   return (
-    <div>
-      <Stage>
-        <Graphics draw={drawRing} position={position} />
-        <Container position={position} rotation={(-3 / 16) * Math.PI * 2}>
-          <Tap />
-        </Container>
-      </Stage>
-    </div>
+    <>
+      <Ring />
+      <Container position={position} rotation={getLaneRotationRadian(1)}>
+        <Tap hitTime={400} />
+      </Container>
+    </>
   );
 };
