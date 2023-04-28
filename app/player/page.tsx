@@ -4,7 +4,7 @@ import { PlayerContext } from "./context/context";
 import { TimerProvider } from "./context/timer";
 import { TimerControls } from "./controls";
 import { Player } from "./player";
-import { SlidePaths } from "./view/slide-paths";
+import { SlidePaths } from "./view/slide/slide-paths";
 
 const Page = () => {
   return (

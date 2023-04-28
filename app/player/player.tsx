@@ -3,8 +3,9 @@ import { Container, useTick } from "@pixi/react";
 import { useContext } from "react";
 import { PlayerContext } from "./context/context";
 import { TimeControlContext, TimerContext } from "./context/timer";
+import { Hold } from "./view/hold";
 import { Ring } from "./view/ring";
-import { Slide } from "./view/slide";
+import { Slide } from "./view/slide/slide";
 import { Tap } from "./view/tap";
 
 export const Player = () => {
@@ -22,11 +23,12 @@ export const Player = () => {
       <Container rotation={getLaneRotationRadian(1)}>
         <Tap hitTime={400} />
         <Slide
-          startTime={400}
+          startTime={800}
           endTime={1500}
           destinationDifference={5}
           type="Thunder"
         />
+        <Hold startTime={500} endTime={800} />
       </Container>
     </Container>
   );

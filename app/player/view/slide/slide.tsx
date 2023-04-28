@@ -2,8 +2,8 @@ import { AngledPoint, splitPath } from "@/utils/svg";
 import { Container, Graphics } from "@pixi/react";
 import { type Graphics as PixiGraphics } from "pixi.js";
 import { useCallback, useContext, useEffect, useState } from "react";
-import { useTimerTween } from "../animation/timer-tween";
-import { PlayerContext } from "../context/context";
+import { useTimerTween } from "../../animation/timer-tween";
+import { PlayerContext } from "../../context/context";
 import { SlideData } from "./slide-data";
 import { useSlidePath } from "./slide-path.hook";
 
