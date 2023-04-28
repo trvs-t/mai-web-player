@@ -4,12 +4,14 @@ import { PlayerContext } from "./context/context";
 import { TimerProvider } from "./context/timer";
 import { TimerControls } from "./controls";
 import { Player } from "./player";
+import { SlidePaths } from "./view/slide-paths";
 
 const Page = () => {
   return (
     <div>
       <h1>Maimai Player</h1>
       <div>
+        <SlidePaths />
         <PlayerContext.Provider
           value={{
             position: [300, 300],

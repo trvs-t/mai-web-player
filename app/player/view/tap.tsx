@@ -1,7 +1,7 @@
 import { Graphics } from "@pixi/react";
 import { Graphics as PixiGraphics } from "pixi.js";
 import { useCallback } from "react";
-import { useLaneMovement } from "../lane";
+import { useLaneMovement } from "../animation/lane";
 
 export function Tap({ hitTime }: { hitTime: number }) {
   const { displacement, isStart, isHit } = useLaneMovement(hitTime);

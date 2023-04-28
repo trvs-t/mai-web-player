@@ -4,7 +4,7 @@ import { Graphics as PixiGraphics } from "pixi.js";
 import { useCallback, useContext } from "react";
 import { PlayerContext } from "../context/context";
 export function Ring() {
-  const { position, radius } = useContext(PlayerContext);
+  const { radius } = useContext(PlayerContext);
   const drawRing = useCallback(
     (g: PixiGraphics) => {
       g.clear();
@@ -21,5 +21,5 @@ export function Ring() {
     },
     [radius]
   );
-  return <Graphics draw={drawRing} position={position} />;
+  return <Graphics draw={drawRing} anchor={0.5} />;
 }
