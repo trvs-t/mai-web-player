@@ -12,6 +12,9 @@ interface SlideProps extends SlideData {
   endTime: number;
 }
 
+const slideWidth = 12,
+  slideHeight = 11;
+
 export function Slide({ startTime, endTime, ...data }: SlideProps) {
   const { radius } = useContext(PlayerContext);
   const scale = radius / (1080 / 2);
@@ -31,23 +34,16 @@ export function Slide({ startTime, endTime, ...data }: SlideProps) {
 
   const draw = useCallback((g: PixiGraphics) => {
     g.clear();
-    var triangleWidth = 20,
-      triangleHeight = triangleWidth,
-      triangleHalfway = triangleWidth / 2;
-
-    // draw triangle
-    // g.beginFill(0xff0000, 1);
-    g.lineTextureStyle({
-      width: 2,
-      color: 0xff0000,
-    })
-      .moveTo(0, triangleHeight + 2)
-      .lineTo(-triangleHalfway, 0)
-      .lineTo(0, triangleHeight)
-      .lineTo(triangleHalfway, 0)
-      .lineTo(0, triangleHeight + 2);
-
-    // g.endFill();
+    g.lineStyle(2, 0x0c1f27, 1, 0.5, true);
+    g.beginFill(0x5bc3c4);
+    g.moveTo(0, slideHeight)
+      .lineTo(-slideWidth, slideHeight / 2)
+      .lineTo(-slideWidth, -slideHeight / 2)
+      .lineTo(0, 0)
+      .lineTo(slideWidth, -slideHeight / 2)
+      .lineTo(slideWidth, slideHeight / 2)
+      .closePath()
+      .endFill();
   }, []);
 
   if (isEnd) return null;
@@ -57,15 +53,17 @@ export function Slide({ startTime, endTime, ...data }: SlideProps) {
   const pointsToDraw = points.slice(firstVisiblePointIndex);
 
   return (
-    <Container anchor={0.5} rotation={(7 / 8) * Math.PI}>
+    // to undo rotation at button 1, we need to rotate the container
+    // the rotation should be 7/8 but original svgs seems a bit off
+    <Container anchor={0.5} rotation={(6.9 / 8) * Math.PI}>
       {pointsToDraw.map((point, i) => (
         <Graphics
           key={point.id}
           draw={draw}
           anchor={0.5}
           position={[
-            point.point[0] * scale - radius + 8,
-            point.point[1] * scale - radius - 16,
+            point.point[0] * scale - radius,
+            point.point[1] * scale - radius,
           ]}
           rotation={point.angle}
         />

@@ -21,7 +21,7 @@ export const useSlidePath = (data: SlideData) => {
     if (slide) {
       setSlidePath(slide);
     }
-  }, []);
+  }, [data]);
   return slidePath;
 };
 const pathIdByType = {
