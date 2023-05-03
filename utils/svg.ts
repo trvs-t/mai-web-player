@@ -4,17 +4,15 @@ export type AngledPoint = {
   angle: number;
 };
 
-// TODO split with segment length instead of points count
 export function splitPath(
-  p: SVGPathElement,
-  pointsCount: number
+  path: SVGPathElement,
+  segmentLength: number
 ): { id: number; point: [number, number]; angle: number }[] {
-  const pLength = p.getTotalLength();
-  const pieceSize = pLength / pointsCount;
+  const pathLength = path.getTotalLength();
 
   var points: [number, number][] = [];
-  for (let i = 0; i <= pLength; i += pieceSize) {
-    const point = p.getPointAtLength(i);
+  for (let i = 0; i <= pathLength; i += segmentLength) {
+    const point = path.getPointAtLength(Math.min(i, pathLength));
     points.push([point.x, point.y]);
   }
   const pieces = points.map((point, i) => {

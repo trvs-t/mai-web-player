@@ -4,32 +4,41 @@ import { type Graphics as PixiGraphics } from "pixi.js";
 import { useCallback, useContext, useEffect, useState } from "react";
 import { useTimerTween } from "../../animation/timer-tween";
 import { PlayerContext } from "../../context/context";
-import { SlideData } from "./slide-data";
+import { TimerContext } from "../../context/timer";
+import { SlideVisualizationData } from "../../data/visualization";
 import { useSlidePath } from "./slide-path.hook";
 
-interface SlideProps extends SlideData {
-  startTime: number;
-  endTime: number;
-}
-
 const slideWidth = 12,
-  slideHeight = 11;
+  slideHeight = 10;
 
-export function Slide({ startTime, endTime, ...data }: SlideProps) {
+const slideAppearTime = 400; // todo: config
+
+export function Slide({
+  hitTime,
+  startTime,
+  duration,
+  rotation,
+  type,
+  destinationDifference,
+}: SlideVisualizationData) {
   const { radius } = useContext(PlayerContext);
   const scale = radius / (1080 / 2);
   const [points, setPoints] = useState<AngledPoint[]>([]);
 
-  const path = useSlidePath(data);
+  const path = useSlidePath(type, destinationDifference);
   useEffect(() => {
     if (path) {
-      setPoints(splitPath(path, 30));
+      setPoints(splitPath(path, slideHeight * 4.5));
     }
   }, [path]);
 
-  const { progress, isStart, isEnd } = useTimerTween(
-    startTime,
-    endTime - startTime
+  const { time } = useContext(TimerContext);
+
+  const { progress, isEnd } = useTimerTween(startTime, duration);
+
+  const { progress: appearProgress } = useTimerTween(
+    hitTime - slideAppearTime,
+    slideAppearTime
   );
 
   const draw = useCallback((g: PixiGraphics) => {
@@ -46,7 +55,7 @@ export function Slide({ startTime, endTime, ...data }: SlideProps) {
       .endFill();
   }, []);
 
-  if (isEnd) return null;
+  if (isEnd || time < hitTime - slideAppearTime) return null;
 
   const firstVisiblePointIndex =
     progress < 0 ? 0 : Math.ceil(progress * points.length);
@@ -54,8 +63,11 @@ export function Slide({ startTime, endTime, ...data }: SlideProps) {
 
   return (
     // to undo rotation at button 1, we need to rotate the container
-    // the rotation should be 7/8 but original svgs seems a bit off
-    <Container anchor={0.5} rotation={(6.9 / 8) * Math.PI}>
+    <Container
+      anchor={0.5}
+      rotation={(7 / 8) * Math.PI + rotation}
+      alpha={appearProgress}
+    >
       {pointsToDraw.map((point, i) => (
         <Graphics
           key={point.id}

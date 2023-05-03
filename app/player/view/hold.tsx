@@ -3,11 +3,7 @@ import { Graphics as PixiGraphics } from "pixi.js";
 import { useCallback, useContext } from "react";
 import { useLaneMovement } from "../animation/lane";
 import { PlayerContext } from "../context/context";
-
-interface HoldProps {
-  startTime: number;
-  endTime: number;
-}
+import { HoldVisualizeData } from "../data/visualization";
 
 const HoldWidth = 24;
 const StrokeWidth = 4;
@@ -23,10 +19,10 @@ function hexPoints(height: number, width: number) {
   ];
 }
 
-export function Hold({ startTime, endTime }: HoldProps) {
+export function Hold({ hitTime, duration }: HoldVisualizeData) {
   const { radius } = useContext(PlayerContext);
-  const startMovement = useLaneMovement(startTime);
-  const endMovement = useLaneMovement(endTime);
+  const startMovement = useLaneMovement(hitTime);
+  const endMovement = useLaneMovement(hitTime + duration);
   const startDisplacement = Math.min(
     Math.max(0, startMovement.displacement),
     radius

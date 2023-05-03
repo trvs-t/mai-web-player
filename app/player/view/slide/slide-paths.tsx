@@ -1,3 +1,5 @@
+import { memo } from "react";
+
 const svgHtml = `<svg version="1.1" id="CUP_x5F_Curve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px"
 y="0px" viewBox="0 0 1080 1080" style="enable-background:new 0 0 1080 1080;" xml:space="preserve">
 <path id="CUP_x5F_Curve_x5F_1" style="fill:none;stroke:#000000;stroke-miterlimit:10;" d="M723.733,96.43L559.311,446.333
@@ -211,11 +213,11 @@ viewBox="0 0 1080 1080" style="enable-background:new 0 0 1080 1080;" xml:space="
 </svg>
 `;
 
-export function SlidePaths() {
+export const SlidePaths = memo(function SlidePaths() {
   return (
     <div
       dangerouslySetInnerHTML={{ __html: svgHtml }}
       style={{ opacity: 0, width: 0, height: 0 }}
     />
   );
-}
+});

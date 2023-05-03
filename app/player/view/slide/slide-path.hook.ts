@@ -1,27 +1,40 @@
 import { useEffect, useState } from "react";
-import { SlideData } from "./slide-data";
+import { SlideType } from "../../data/chart";
 
-// TODO slide data structure
-// TODO resolve path id from slide data
-export const useSlidePath = (data: SlideData) => {
+function getIndexInType(type: SlideType, destinationDifference: number) {
+  const typePathIds = pathIdByType[type];
+  let index = destinationDifference,
+    mirror = false;
+  switch (type) {
+    case "Thunder":
+      return 0;
+    case "Straight":
+      index += 2;
+    default:
+      if (index > typePathIds.length) {
+        index = 8 - index;
+        mirror = true;
+      }
+  }
+  return index;
+}
+
+export const useSlidePath = (
+  slideType: SlideType,
+  destinationDifference: number
+) => {
   const [slidePath, setSlidePath] = useState<SVGGeometryElement>();
 
   useEffect(() => {
-    const { type, destinationDifference } = data;
-    const typePathIds = pathIdByType[type];
-    const indexInType =
-      type == "Thunder"
-        ? 0
-        : destinationDifference > typePathIds.length
-        ? 8 - destinationDifference
-        : destinationDifference;
+    const typePathIds = pathIdByType[slideType];
+    const indexInType = getIndexInType(slideType, destinationDifference);
     const slide = document.querySelector<SVGGeometryElement>(
       `#${typePathIds[indexInType]}`
     );
     if (slide) {
       setSlidePath(slide);
     }
-  }, [data]);
+  }, [slideType, destinationDifference]);
   return slidePath;
 };
 const pathIdByType = {
