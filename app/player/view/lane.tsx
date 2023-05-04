@@ -1,7 +1,7 @@
 import { Graphics } from "@pixi/react";
 import { Graphics as PixiGraphics } from "pixi.js";
 import { useCallback, useContext } from "react";
-import { PlayerContext } from "../context/context";
+import { PlayerContext } from "../context/player";
 const width = 16;
 export function Lane() {
   const { radius } = useContext(PlayerContext);

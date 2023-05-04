@@ -4,7 +4,7 @@ import { Container, Graphics } from "@pixi/react";
 import { type Graphics as PixiGraphics } from "pixi.js";
 import { useCallback, useContext, useEffect, useState } from "react";
 import { useTimerTween } from "../../animation/timer-tween";
-import { PlayerContext } from "../../context/context";
+import { PlayerContext } from "../../context/player";
 import { TimerContext } from "../../context/timer";
 import { SlideVisualizationData } from "../../data/visualization";
 import { drawStar } from "../graphics";

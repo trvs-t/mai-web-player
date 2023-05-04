@@ -2,7 +2,7 @@ import { Graphics } from "@pixi/react";
 import { Graphics as PixiGraphics } from "pixi.js";
 import { useCallback, useContext } from "react";
 import { useLaneMovement } from "../animation/lane";
-import { PlayerContext } from "../context/context";
+import { PlayerContext } from "../context/player";
 import { HoldVisualizeData } from "../data/visualization";
 
 const HoldWidth = 24;

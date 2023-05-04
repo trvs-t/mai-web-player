@@ -2,7 +2,7 @@ import { getLaneRotationRadian } from "@/utils/lane";
 import { Graphics } from "@pixi/react";
 import { Graphics as PixiGraphics } from "pixi.js";
 import { useCallback, useContext } from "react";
-import { PlayerContext } from "../context/context";
+import { PlayerContext } from "../context/player";
 export function Ring() {
   const { radius } = useContext(PlayerContext);
   const drawRing = useCallback(

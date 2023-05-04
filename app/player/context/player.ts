@@ -9,5 +9,5 @@ export interface PlayerConfig {
 export const PlayerContext = createContext<PlayerConfig>({
   position: [300, 300],
   radius: 200,
-  noteDuration: 200,
+  noteDuration: 400,
 });

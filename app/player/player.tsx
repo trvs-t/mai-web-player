@@ -1,8 +1,7 @@
 import { getLaneRotationRadian } from "@/utils/lane";
-import { Container, useTick } from "@pixi/react";
+import { Container } from "@pixi/react";
 import { useContext } from "react";
-import { PlayerContext } from "./context/context";
-import { TimeControlContext, TimerContext } from "./context/timer";
+import { PlayerContext } from "./context/player";
 import { testChart } from "./data/chart";
 import {
   SlideVisualizationData,
@@ -15,17 +14,10 @@ import { Star } from "./view/slide/star";
 import { Tap } from "./view/tap";
 
 const lanes = new Array(8).fill(0).map((_, i) => i + 1);
+const visualizationChart = convertChartVisualizationData(testChart);
 
 export const Player = () => {
-  const { isPlaying, time } = useContext(TimerContext);
-  const { setTime } = useContext(TimeControlContext);
   const { position, radius } = useContext(PlayerContext);
-
-  useTick((_, ticker) => {
-    setTime(time + ticker.deltaMS);
-  }, isPlaying);
-
-  const visualizationChart = convertChartVisualizationData(testChart);
   const slides = visualizationChart.filter(
     (note): note is { type: "slide"; data: SlideVisualizationData } =>
       note.type === "slide"

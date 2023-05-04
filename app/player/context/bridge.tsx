@@ -1,7 +1,7 @@
 import { Stage } from "@pixi/react";
 import { ReactNode } from "react";
-import { PlayerContext } from "./context";
-import { TimeControlContext, TimerContext } from "./timer";
+import { AudioContext } from "./audio";
+import { PlayerContext } from "./player";
 
 export function BridgedStage({
   children,
@@ -13,25 +13,17 @@ export function BridgedStage({
   return (
     <PlayerContext.Consumer>
       {(playerContext) => (
-        <TimerContext.Consumer>
-          {(timerContext) => (
-            <TimeControlContext.Consumer>
-              {(setTimeContext) => {
-                return (
-                  <Stage {...props}>
-                    <PlayerContext.Provider value={playerContext}>
-                      <TimerContext.Provider value={timerContext}>
-                        <TimeControlContext.Provider value={setTimeContext}>
-                          {children}
-                        </TimeControlContext.Provider>
-                      </TimerContext.Provider>
-                    </PlayerContext.Provider>
-                  </Stage>
-                );
-              }}
-            </TimeControlContext.Consumer>
+        <AudioContext.Consumer>
+          {(audio) => (
+            <Stage {...props}>
+              <PlayerContext.Provider value={playerContext}>
+                <AudioContext.Provider value={audio}>
+                  {children}
+                </AudioContext.Provider>
+              </PlayerContext.Provider>
+            </Stage>
           )}
-        </TimerContext.Consumer>
+        </AudioContext.Consumer>
       )}
     </PlayerContext.Consumer>
   );

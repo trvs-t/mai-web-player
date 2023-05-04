@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { PlayerContext } from "../context/context";
+import { PlayerContext } from "../context/player";
 import { useTimerTween } from "./timer-tween";
 
 export const useLaneMovement = (hitTime: number) => {

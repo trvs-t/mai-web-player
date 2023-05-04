@@ -1,9 +1,28 @@
-import { useContext } from "react";
-import { TimeControlContext, TimerContext } from "./context/timer";
+import { useContext, useEffect, useState } from "react";
+import { AudioContext } from "./context/audio";
 
 export function TimerControls() {
-  const { isPlaying, time } = useContext(TimerContext);
-  const { play, pause, reset, stop } = useContext(TimeControlContext);
+  const audio = useContext(AudioContext);
+  const music = audio?.music;
+  const [isPlaying, setIsPlaying] = useState(false);
+  useEffect(() => {
+    if (!music) return;
+    music.on("play", () => setIsPlaying(true));
+    music.on("pause", () => setIsPlaying(false));
+    music.on("stop", () => setIsPlaying(false));
+  }, [music]);
+  function play() {
+    music?.play();
+  }
+  function pause() {
+    music?.pause();
+  }
+  function reset() {
+    music?.seek(0);
+  }
+  function stop() {
+    music?.stop();
+  }
   return (
     <div>
       {isPlaying ? "Playing" : "Paused"}
