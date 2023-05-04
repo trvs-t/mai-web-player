@@ -19,7 +19,7 @@ function hexPoints(height: number, width: number) {
   ];
 }
 
-export function Hold({ hitTime, duration }: HoldVisualizeData) {
+export function Hold({ hitTime, duration }: Omit<HoldVisualizeData, "lane">) {
   const { radius } = useContext(PlayerContext);
   const startMovement = useLaneMovement(hitTime);
   const endMovement = useLaneMovement(hitTime + duration);

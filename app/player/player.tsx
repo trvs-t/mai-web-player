@@ -1,15 +1,13 @@
-import { getLaneDifference, getLaneRotationRadian } from "@/utils/lane";
+import { getLaneRotationRadian } from "@/utils/lane";
 import { Container, useTick } from "@pixi/react";
 import { useContext } from "react";
 import { PlayerContext } from "./context/context";
 import { TimeControlContext, TimerContext } from "./context/timer";
+import { testChart } from "./data/chart";
 import {
-  ChartData,
-  HoldChartData,
-  SlideChartData,
-  TapChartData,
-  testChart,
-} from "./data/chart";
+  SlideVisualizationData,
+  convertChartVisualizationData,
+} from "./data/visualization";
 import { Hold } from "./view/hold";
 import { Ring } from "./view/ring";
 import { Slide } from "./view/slide/slide";
@@ -27,45 +25,27 @@ export const Player = () => {
     setTime(time + ticker.deltaMS);
   }, isPlaying);
 
-  const notesByType: {
-    tap: TapChartData[];
-    slide: SlideChartData[];
-    hold: HoldChartData[];
-  } = testChart.reduce((acc, note) => {
-    const { type } = note;
-    if (!acc[type]) {
-      acc[type] = [];
-    }
-    acc[type].push(note);
-    return acc;
-  }, {} as Record<ChartData["type"], typeof testChart>) as any;
+  const visualizationChart = convertChartVisualizationData(testChart);
+  const slides = visualizationChart.filter(
+    (note): note is { type: "slide"; data: SlideVisualizationData } =>
+      note.type === "slide"
+  );
 
   return (
     <Container position={position} anchor={0.5}>
       <Ring />
       {/* Slide in it's own container */}
       <Container key="slide">
-        {notesByType.slide.map((note: SlideChartData, i) => (
-          <Slide
-            key={`slide-${i}`}
-            hitTime={note.hitTime}
-            startTime={note.startTime}
-            duration={note.duration}
-            destinationDifference={getLaneDifference(
-              note.destinationLane,
-              note.lane
-            )}
-            type={note.slideType}
-            rotation={getLaneRotationRadian(note.lane)}
-          />
+        {slides.map(({ data }, i) => (
+          <Slide key={`slide-${i}`} {...data} />
         ))}
       </Container>
       {lanes.map((lane) => (
         <Container key={lane} rotation={getLaneRotationRadian(lane)}>
-          {testChart
-            .filter((note) => note.lane == lane)
-            .map((note, i) => {
-              const { type, hitTime } = note;
+          {visualizationChart
+            .filter(({ data: note }) => note.lane == lane)
+            .map(({ type, data: note }, i) => {
+              const { hitTime } = note;
               switch (type) {
                 case "tap":
                   return <Tap key={`${type}-${i}`} hitTime={hitTime} />;
@@ -78,20 +58,7 @@ export const Player = () => {
                     />
                   );
                 case "slide":
-                  return (
-                    <Star
-                      key={`${type}-${i}`}
-                      data={{
-                        ...note,
-                        type: note.slideType,
-                        destinationDifference: getLaneDifference(
-                          note.destinationLane,
-                          note.lane
-                        ),
-                        rotation: getLaneRotationRadian(note.lane),
-                      }}
-                    />
-                  );
+                  return <Star key={`${type}-${i}`} data={note} />;
                 default:
                   return null;
               }

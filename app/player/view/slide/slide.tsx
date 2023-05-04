@@ -1,3 +1,4 @@
+import { getLaneRotationRadian } from "@/utils/lane";
 import { AngledPoint, splitPath } from "@/utils/svg";
 import { Container, Graphics } from "@pixi/react";
 import { type Graphics as PixiGraphics } from "pixi.js";
@@ -6,6 +7,7 @@ import { useTimerTween } from "../../animation/timer-tween";
 import { PlayerContext } from "../../context/context";
 import { TimerContext } from "../../context/timer";
 import { SlideVisualizationData } from "../../data/visualization";
+import { drawStar } from "../graphics";
 import { useSlidePath } from "./slide-path.hook";
 
 const slideWidth = 12,
@@ -14,18 +16,24 @@ const slideWidth = 12,
 const slideAppearTime = 400; // todo: config
 
 export function Slide({
+  lane,
   hitTime,
   startTime,
   duration,
-  rotation,
-  type,
-  destinationDifference,
+  slideType,
+  direction,
+  destinationLane,
 }: SlideVisualizationData) {
+  const rotation = getLaneRotationRadian(lane);
   const { radius } = useContext(PlayerContext);
   const scale = radius / (1080 / 2);
   const [points, setPoints] = useState<AngledPoint[]>([]);
 
-  const path = useSlidePath(type, destinationDifference);
+  const { slidePath: path, mirror } = useSlidePath({
+    slideType,
+    destinationDifference: destinationLane - lane,
+    direction,
+  });
   useEffect(() => {
     if (path) {
       setPoints(splitPath(path, slideHeight * 4.5));
@@ -55,31 +63,43 @@ export function Slide({
       .endFill();
   }, []);
 
-  if (isEnd || time < hitTime - slideAppearTime) return null;
+  if (isEnd || time < hitTime - slideAppearTime || !path) return null;
 
   const firstVisiblePointIndex =
     progress < 0 ? 0 : Math.ceil(progress * points.length);
   const pointsToDraw = points.slice(firstVisiblePointIndex);
 
+  const slidePoint = path.getPointAtLength(path.getTotalLength() * progress);
+
   return (
-    // to undo rotation at button 1, we need to rotate the container
-    <Container
-      anchor={0.5}
-      rotation={(7 / 8) * Math.PI + rotation}
-      alpha={appearProgress}
-    >
-      {pointsToDraw.map((point, i) => (
+    <Container scale={[mirror ? -1 : 1, 1]} rotation={rotation}>
+      {/* first align slide path to renderer coordinates (0 rotation = south) */}
+      <Container
+        anchor={0.5}
+        rotation={(7 / 8) * Math.PI}
+        alpha={appearProgress}
+      >
+        {pointsToDraw.map((point, i) => (
+          <Graphics
+            key={point.id}
+            draw={draw}
+            anchor={0.5}
+            position={[
+              point.point[0] * scale - radius,
+              point.point[1] * scale - radius,
+            ]}
+            rotation={point.angle}
+          />
+        ))}
         <Graphics
-          key={point.id}
-          draw={draw}
+          draw={drawStar}
           anchor={0.5}
           position={[
-            point.point[0] * scale - radius,
-            point.point[1] * scale - radius,
+            slidePoint.x * scale - radius,
+            slidePoint.y * scale - radius,
           ]}
-          rotation={point.angle}
         />
-      ))}
+      </Container>
     </Container>
   );
 }
