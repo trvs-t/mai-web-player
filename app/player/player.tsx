@@ -1,8 +1,8 @@
 import { getLaneRotationRadian } from "@/utils/lane";
 import { Container } from "@pixi/react";
-import { useContext } from "react";
+import { useContext, useMemo } from "react";
+import { ChartContext } from "./context/chart";
 import { PlayerContext } from "./context/player";
-import { testChart } from "./data/chart";
 import {
   SlideVisualizationData,
   convertChartVisualizationData,
@@ -14,10 +14,21 @@ import { Star } from "./view/slide/star";
 import { Tap } from "./view/tap";
 
 const lanes = new Array(8).fill(0).map((_, i) => i + 1);
-const visualizationChart = convertChartVisualizationData(testChart);
+// const visualizationChart = convertChartVisualizationData(testChart);
 
 export const Player = () => {
   const { position, radius } = useContext(PlayerContext);
+
+  const chart = useContext(ChartContext);
+  const visualizationChart = useMemo(() => {
+    if (!chart?.items.length) return [];
+    try {
+      return convertChartVisualizationData(chart);
+    } catch (e) {
+      console.error(e);
+      return [];
+    }
+  }, [chart]);
   const slides = visualizationChart.filter(
     (note): note is { type: "slide"; data: SlideVisualizationData } =>
       note.type === "slide"

@@ -48,7 +48,8 @@ export function convertChartVisualizationData(chart: Chart) {
   const baseTimeSignature = chart.items[0];
   if (
     Array.isArray(baseTimeSignature) ||
-    baseTimeSignature.type !== "timeSignature"
+    baseTimeSignature.type !== "timeSignature" ||
+    !baseTimeSignature.data.bpm
   ) {
     throw new Error("Invalid chart");
   }
@@ -63,7 +64,7 @@ export function convertChartVisualizationData(chart: Chart) {
       const { type, data } = item;
       switch (type) {
         case "timeSignature":
-          currentBpm = data.bpm;
+          currentBpm = data.bpm ?? currentBpm;
           currentDivision = data.division;
           continue;
         case "rest":

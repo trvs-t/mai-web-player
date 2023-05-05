@@ -34,7 +34,7 @@ export interface SlideChartData {
 }
 
 export interface TimeSignature {
-  bpm: number;
+  bpm?: number;
   division: number;
 }
 
@@ -62,7 +62,20 @@ export function validateChart(chart: Chart): boolean {
   return !Array.isArray(firstItem) && firstItem.type === "timeSignature";
 }
 
-export function tap(lane: number) {
+export function timeSignatureItem(
+  bpm: number | string | undefined,
+  division: number | string
+) {
+  return {
+    type: "timeSignature" as const,
+    data: {
+      bpm: bpm ? +bpm : undefined,
+      division: +division,
+    } as TimeSignature,
+  };
+}
+
+export function tapItem(lane: number) {
   return {
     type: "note" as const,
     data: {
@@ -72,7 +85,7 @@ export function tap(lane: number) {
   };
 }
 
-function hold(lane: number, duration: DurationInBpm) {
+export function holdItem(lane: number, duration: DurationInBpm) {
   return {
     type: "note" as const,
     data: {
@@ -83,7 +96,7 @@ function hold(lane: number, duration: DurationInBpm) {
   };
 }
 
-function slide(
+export function slideItem(
   lane: number,
   duration: DurationInBpm,
   slideType: SlideType,
@@ -103,9 +116,9 @@ function slide(
   };
 }
 
-function rest(divisionCount: number): ChartItem {
+export function restItem(divisionCount: number) {
   return {
-    type: "rest",
+    type: "rest" as const,
     data: {
       divisionCount,
     } as Rest,
@@ -124,17 +137,17 @@ export const testChart: Chart = {
         division: 4,
       },
     },
-    rest(4),
-    [tap(1), tap(8)],
-    tap(1),
-    tap(1),
-    tap(1),
-    tap(1),
-    tap(1),
-    tap(1),
-    tap(1),
-    tap(1),
-    tap(1),
+    restItem(4),
+    [tapItem(1), tapItem(8)],
+    tapItem(1),
+    tapItem(1),
+    tapItem(1),
+    tapItem(1),
+    tapItem(1),
+    tapItem(1),
+    tapItem(1),
+    tapItem(1),
+    tapItem(1),
     // hold(1, { division: 8, divisionCount: 6 }),
     // tap(2),
     // tap(3),

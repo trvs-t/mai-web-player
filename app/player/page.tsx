@@ -1,11 +1,14 @@
 "use client";
 import { Howl } from "howler";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { AudioContext, AudioTimerProvider } from "./context/audio";
 import { BridgedStage } from "./context/bridge";
+import { ChartContext } from "./context/chart";
 import { PlayerContext } from "./context/player";
 import { TimerProvider } from "./context/timer";
 import { TimerControls } from "./controls";
+import { Chart } from "./data/chart";
+import { parseSimaiChart } from "./data/simai";
 import { Player } from "./player";
 import { SlidePaths } from "./view/slide/slide-paths";
 
@@ -30,41 +33,63 @@ const Page = () => {
 
   const [audioOffset, setAudioOffset] = useState(0);
 
+  const [simai, setSimai] = useState<string>("");
+  const chart: Chart | null = useMemo(
+    () =>
+      simai.length
+        ? {
+            metadata: {
+              title: "test",
+            },
+            items: parseSimaiChart(simai),
+          }
+        : null,
+    [simai]
+  );
+  console.log(chart);
+
   return (
     <div>
       <h1>Maimai Player</h1>
-      <div>
-        <SlidePaths />
-        <AudioContext.Provider
-          value={music ? { music, offset: audioOffset } : null}
-        >
-          <PlayerContext.Provider
-            value={{
-              position: [300, 300],
-              radius: 200,
-              noteDuration: 1000,
-            }}
+      <div className="grid grid-cols-2">
+        <div>
+          <SlidePaths />
+          <AudioContext.Provider
+            value={music ? { music, offset: audioOffset } : null}
           >
-            <TimerProvider>
-              <BridgedStage>
-                <AudioTimerProvider>
-                  <Player />
-                </AudioTimerProvider>
-              </BridgedStage>
-              <TimerControls />
-            </TimerProvider>
-          </PlayerContext.Provider>
-        </AudioContext.Provider>
-        <input
-          type="number"
-          value={audioOffset}
-          onChange={(e) => {
-            console.log(e.target.value);
-            setAudioOffset(+e.target.value);
-          }}
-          className="text-black"
-        />
-        <input type="file" onChange={onFilesPicked} />
+            <PlayerContext.Provider
+              value={{
+                position: [300, 300],
+                radius: 200,
+                noteDuration: 1000,
+              }}
+            >
+              <ChartContext.Provider value={chart}>
+                <TimerProvider>
+                  <BridgedStage>
+                    <AudioTimerProvider>
+                      <Player />
+                    </AudioTimerProvider>
+                  </BridgedStage>
+                  <TimerControls />
+                </TimerProvider>
+              </ChartContext.Provider>
+            </PlayerContext.Provider>
+          </AudioContext.Provider>
+          <input
+            type="number"
+            value={audioOffset}
+            onChange={(e) => {
+              console.log(e.target.value);
+              setAudioOffset(+e.target.value);
+            }}
+            className="text-black"
+          />
+          <input type="file" onChange={onFilesPicked} />
+        </div>
+        <div>
+          <textarea value={simai} onChange={(e) => setSimai(e.target.value)} />
+        </div>
       </div>
     </div>
   );

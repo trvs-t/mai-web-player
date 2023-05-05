@@ -1,6 +1,7 @@
 import { Stage } from "@pixi/react";
 import { ReactNode } from "react";
 import { AudioContext } from "./audio";
+import { ChartContext } from "./chart";
 import { PlayerContext } from "./player";
 
 export function BridgedStage({
@@ -15,13 +16,19 @@ export function BridgedStage({
       {(playerContext) => (
         <AudioContext.Consumer>
           {(audio) => (
-            <Stage {...props}>
-              <PlayerContext.Provider value={playerContext}>
-                <AudioContext.Provider value={audio}>
-                  {children}
-                </AudioContext.Provider>
-              </PlayerContext.Provider>
-            </Stage>
+            <ChartContext.Consumer>
+              {(chart) => (
+                <Stage {...props}>
+                  <PlayerContext.Provider value={playerContext}>
+                    <AudioContext.Provider value={audio}>
+                      <ChartContext.Provider value={chart}>
+                        {children}
+                      </ChartContext.Provider>
+                    </AudioContext.Provider>
+                  </PlayerContext.Provider>
+                </Stage>
+              )}
+            </ChartContext.Consumer>
           )}
         </AudioContext.Consumer>
       )}
