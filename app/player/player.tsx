@@ -40,7 +40,7 @@ export const Player = () => {
               const { hitTime } = note;
               switch (type) {
                 case "tap":
-                  return <Tap key={`${type}-${i}`} hitTime={hitTime} />;
+                  return <Tap key={`${type}-${i}`} data={note} />;
                 case "hold":
                   return (
                     <Hold

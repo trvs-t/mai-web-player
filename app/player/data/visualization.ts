@@ -8,17 +8,20 @@ export interface SlideVisualizationData {
   slideType: SlideType;
   direction: "cw" | "ccw";
   destinationLane: number;
+  isEach?: boolean;
 }
 
 export interface HoldVisualizeData {
   lane: number;
   hitTime: number;
   duration: number;
+  isEach?: boolean;
 }
 
 export interface TapVisualizeData {
   lane: number;
   hitTime: number;
+  isEach?: boolean;
 }
 
 export type NoteVisualizationData =
@@ -43,7 +46,10 @@ export type NoteVisualization =
 export function convertChartVisualizationData(chart: Chart) {
   let time = 0;
   const baseTimeSignature = chart.items[0];
-  if (baseTimeSignature.type !== "timeSignature") {
+  if (
+    Array.isArray(baseTimeSignature) ||
+    baseTimeSignature.type !== "timeSignature"
+  ) {
     throw new Error("Invalid chart");
   }
   let currentBpm = baseTimeSignature.data.bpm;
@@ -52,68 +58,76 @@ export function convertChartVisualizationData(chart: Chart) {
   let notes: NoteVisualization[] = [];
 
   for (const item of chart.items.slice(1)) {
-    const { type, data } = item;
-    switch (type) {
-      case "timeSignature":
-        currentBpm = data.bpm;
-        currentDivision = data.division;
-        break;
-      case "rest":
-        time +=
-          data.divisionCount * ((60000 / currentBpm / currentDivision) * 4);
-        break;
-      case "note":
-        switch (data.type) {
-          case "tap":
-            notes.push({
-              type: "tap",
-              data: {
-                lane: data.lane,
-                hitTime: time,
-              },
-            });
-            time += (60000 / currentBpm / currentDivision) * 4;
-            break;
-          case "hold":
-            notes.push({
-              type: "hold",
-              data: {
-                lane: data.lane,
-                hitTime: time,
-                duration:
-                  data.duration.divisionCount *
-                  ((60000 /
-                    (data.duration.bpm ?? currentBpm) /
-                    data.duration.division) *
-                    4),
-              },
-            });
-            time += (60000 / currentBpm / currentDivision) * 4;
-            break;
-          case "slide":
-            notes.push({
-              type: "slide",
-              data: {
-                lane: data.lane,
-                hitTime: time,
-                startTime:
-                  time + (60000 / (data.duration.bpm ?? currentBpm) / 4) * 4,
-                duration:
-                  data.duration.divisionCount *
-                  ((60000 /
-                    (data.duration.bpm ?? currentBpm) /
-                    data.duration.division) *
-                    4),
-                slideType: data.slideType,
-                direction: data.direction,
-                destinationLane: data.destinationLane,
-              },
-            });
-            time += (60000 / currentBpm / currentDivision) * 4;
-            break;
-        }
-        break;
+    // time signature and rest should not be array
+    if (!Array.isArray(item)) {
+      const { type, data } = item;
+      switch (type) {
+        case "timeSignature":
+          currentBpm = data.bpm;
+          currentDivision = data.division;
+          continue;
+        case "rest":
+          time +=
+            data.divisionCount * ((60000 / currentBpm / currentDivision) * 4);
+          continue;
+      }
     }
+    // handle notes only
+    const itemList = Array.isArray(item) ? item : [item];
+    const isEach = itemList.length > 1;
+    itemList.forEach((item) => {
+      const { data } = item;
+      switch (data.type) {
+        case "tap":
+          notes.push({
+            type: "tap",
+            data: {
+              lane: data.lane,
+              hitTime: time,
+              isEach,
+            },
+          });
+          break;
+        case "hold":
+          notes.push({
+            type: "hold",
+            data: {
+              lane: data.lane,
+              hitTime: time,
+              duration:
+                data.duration.divisionCount *
+                ((60000 /
+                  (data.duration.bpm ?? currentBpm) /
+                  data.duration.division) *
+                  4),
+              isEach,
+            },
+          });
+          break;
+        case "slide":
+          notes.push({
+            type: "slide",
+            data: {
+              lane: data.lane,
+              hitTime: time,
+              startTime:
+                time + (60000 / (data.duration.bpm ?? currentBpm) / 4) * 4,
+              duration:
+                data.duration.divisionCount *
+                ((60000 /
+                  (data.duration.bpm ?? currentBpm) /
+                  data.duration.division) *
+                  4),
+              slideType: data.slideType,
+              direction: data.direction,
+              destinationLane: data.destinationLane,
+              isEach,
+            },
+          });
+          break;
+      }
+    });
+    time += (60000 / currentBpm / currentDivision) * 4;
   }
 
   return notes;

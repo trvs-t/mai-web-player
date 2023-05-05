@@ -2,12 +2,14 @@ import { Graphics } from "@pixi/react";
 import { Graphics as PixiGraphics } from "pixi.js";
 import { useCallback } from "react";
 import { useLaneMovement } from "../animation/lane";
+import { TapVisualizeData } from "../data/visualization";
 
-export function Tap({ hitTime }: { hitTime: number }) {
+export function Tap({ data }: { data: TapVisualizeData }) {
+  const { hitTime, isEach } = data;
   const { displacement, isStart, isHit } = useLaneMovement(hitTime);
   const draw = useCallback((g: PixiGraphics) => {
     g.clear();
-    g.beginFill(0xffc0cb);
+    g.beginFill(isEach ? 0xe4d000 : 0xffc0cb);
     g.drawCircle(0, 0, 16);
     g.beginHole();
     g.drawCircle(0, 0, 12);

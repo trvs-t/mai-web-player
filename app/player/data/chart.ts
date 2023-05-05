@@ -53,17 +53,18 @@ export interface ChartMetadata {
   title: string;
 }
 export interface Chart {
-  items: ChartItem[];
+  items: (ChartItem | { type: "note"; data: NoteData }[])[];
   metadata: ChartMetadata;
 }
 
 export function validateChart(chart: Chart): boolean {
-  return chart.items[0].type === "timeSignature";
+  const firstItem = chart.items[0];
+  return !Array.isArray(firstItem) && firstItem.type === "timeSignature";
 }
 
-export function tap(lane: number): ChartItem {
+export function tap(lane: number) {
   return {
-    type: "note",
+    type: "note" as const,
     data: {
       type: "tap",
       lane,
@@ -71,9 +72,9 @@ export function tap(lane: number): ChartItem {
   };
 }
 
-function hold(lane: number, duration: DurationInBpm): ChartItem {
+function hold(lane: number, duration: DurationInBpm) {
   return {
-    type: "note",
+    type: "note" as const,
     data: {
       type: "hold",
       lane,
@@ -88,9 +89,9 @@ function slide(
   slideType: SlideType,
   direction: "cw" | "ccw",
   destinationLane: number
-): ChartItem {
+) {
   return {
-    type: "note",
+    type: "note" as const,
     data: {
       type: "slide",
       lane,
@@ -124,7 +125,7 @@ export const testChart: Chart = {
       },
     },
     rest(4),
-    tap(1),
+    [tap(1), tap(8)],
     tap(1),
     tap(1),
     tap(1),
