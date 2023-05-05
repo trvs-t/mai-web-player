@@ -46,7 +46,6 @@ const Page = () => {
         : null,
     [simai]
   );
-  console.log(chart);
 
   return (
     <div>
@@ -61,7 +60,7 @@ const Page = () => {
               value={{
                 position: [300, 300],
                 radius: 200,
-                noteDuration: 1000,
+                noteDuration: 500,
               }}
             >
               <ChartContext.Provider value={chart}>
@@ -87,8 +86,13 @@ const Page = () => {
           />
           <input type="file" onChange={onFilesPicked} />
         </div>
-        <div>
-          <textarea value={simai} onChange={(e) => setSimai(e.target.value)} />
+        <div className="w-full h-100">
+          <textarea
+            value={simai}
+            onChange={(e) => setSimai(e.target.value)}
+            rows={20}
+            className="w-full text-black"
+          />
         </div>
       </div>
     </div>
