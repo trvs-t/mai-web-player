@@ -1,7 +1,6 @@
-import { createRoute, createFileRoute } from "@tanstack/react-router";
-import { Route as rootRoute } from "./__root";
+import { createFileRoute } from "@tanstack/react-router";
 import { Howl } from "howler";
-import { useContext, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import {
   AudioContext,
   AudioTimerProvider,
@@ -23,7 +22,16 @@ import { parseSimai, SimaiParseError } from "../lib/simai";
 import { Player } from "../components/player";
 import { Metronome } from "../components/view/metronome";
 import { SlidePaths } from "../components/view/slide/slide-paths";
-import { convertChartWithMeasures, MeasureInfo } from "../lib/visualization";
+import { convertChartWithMeasures } from "../lib/visualization";
+import {
+  downloadChart,
+  copyToClipboard,
+  encodeChartForURL,
+  decodeChartFromURL,
+  saveToLocalStorage,
+  loadFromLocalStorage,
+  readFileAsText,
+} from "../../utils/export";
 
 function TimerProviderSelector({
   children,
@@ -106,6 +114,57 @@ function PlayerPage() {
     return convertChartWithMeasures(chart);
   }, [chart]);
 
+  const [copySuccess, setCopySuccess] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const saved = loadFromLocalStorage();
+    if (saved) {
+      setSimai(saved.simaiText);
+    }
+    
+    const hash = window.location.hash.slice(1);
+    if (hash) {
+      const decoded = decodeChartFromURL(hash);
+      if (decoded) {
+        const simaiText = loadFromLocalStorage()?.simaiText || "";
+        if (simaiText) {
+          setSimai(simaiText);
+        }
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!chart) return;
+    saveToLocalStorage(chart, simai);
+    const encoded = encodeChartForURL(chart);
+    window.location.hash = encoded;
+  }, [chart, simai]);
+
+  async function handleCopy() {
+    const success = await copyToClipboard(simai);
+    setCopySuccess(success);
+    setTimeout(() => setCopySuccess(false), 2000);
+  }
+
+  function handleDownload() {
+    if (!chart) return;
+    downloadChart(chart, "chart.txt");
+  }
+
+  function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    readFileAsText(file).then((text) => {
+      setSimai(text);
+    });
+  }
+
+  function triggerFileUpload() {
+    fileInputRef.current?.click();
+  }
+
   return (
     <div className="p-4">
       <h1 className="text-2xl font-bold mb-4">Maimai Player</h1>
@@ -151,6 +210,39 @@ function PlayerPage() {
             />
           </div>
           <MetadataPanel metadata={chart?.metadata ?? {}} />
+          <div className="border-t pt-4">
+            <label className="block text-sm font-medium mb-2">
+              Chart Import/Export
+            </label>
+            <div className="flex gap-2 flex-wrap">
+              <input
+                type="file"
+                accept=".txt,.simai"
+                ref={fileInputRef}
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+              <button
+                onClick={triggerFileUpload}
+                className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+              >
+                Import File
+              </button>
+              <button
+                onClick={handleDownload}
+                disabled={!chart}
+                className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-sm disabled:bg-gray-400"
+              >
+                Download
+              </button>
+              <button
+                onClick={handleCopy}
+                className="px-3 py-1 bg-purple-500 text-white rounded hover:bg-purple-600 text-sm"
+              >
+                {copySuccess ? "Copied!" : "Copy to Clipboard"}
+              </button>
+            </div>
+          </div>
         </div>
         <div className="w-full">
           <label className="block text-sm font-medium mb-2">
