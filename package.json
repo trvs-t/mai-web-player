@@ -30,6 +30,7 @@
     "typescript": "5.0.4"
   },
   "devDependencies": {
-    "@types/howler": "^2.2.7"
+    "@types/howler": "^2.2.7",
+    "bun-types": "latest"
   }
 }
