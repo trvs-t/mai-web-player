@@ -1,0 +1,36 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["import", "typescript", "unicorn", "react", "react-hooks"],
+  "env": {
+    "browser": true,
+    "es2020": true
+  },
+  "globals": {
+    "React": "readonly"
+  },
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn",
+    "perf": "warn"
+  },
+  "rules": {
+    "eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+    "eslint/no-console": "off",
+    "react/self-closing-comp": "error",
+    "react/no-array-index-key": "warn",
+    "react/react-in-jsx-scope": "off",
+    "typescript/no-explicit-any": "warn",
+    "import/no-cycle": "error",
+    "unicorn/prefer-node-protocol": "off"
+  },
+  "overrides": [
+    {
+      "files": ["**/*.test.ts", "**/*.test.tsx"],
+      "rules": {
+        "typescript/no-explicit-any": "off",
+        "eslint/no-unused-vars": "off"
+      }
+    }
+  ],
+  "ignorePatterns": ["dist", "node_modules", "*.config.ts", "*.config.js"]
+}
