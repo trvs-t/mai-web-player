@@ -6,6 +6,8 @@ import {
   slideItem,
   tapItem,
   timeSignatureItem,
+  touchItem,
+  touchHoldItem,
   type Chart,
   type ChartMetadata,
 } from "./chart";
@@ -379,19 +381,46 @@ function parseSimaiNote(str: string): Chart["items"] {
   }
   const timeSignatureMatch = note.match(timeSignatureExp);
   if (!timeSignatureMatch) return [];
-  const [_, bpm, division, body] = timeSignatureMatch;
+  const [, bpm, division, body] = timeSignatureMatch;
   const parts = body.split("/");
   const parsedBody = [];
   for (const part of parts) {
     const touchMatch = part.match(touchExp);
-    if (touchMatch) {
-      // TODO: touch notes
-      continue;
+    if (touchMatch?.groups) {
+      const { zone, position, hold, hanabi, duration, bpm: touchBpm, division: touchDivision, count } =
+        touchMatch.groups;
+      
+      const isEndMarker = !position && !hold && zone === "E";
+      if (!isEndMarker) {
+        const zoneTyped = zone as "A" | "B" | "C" | "D" | "E";
+        const positionNum = position ? +position : 1;
+        const isHanabi = !!hanabi;
+
+        if (hold) {
+          if (!duration) {
+            console.warn("Touch hold without duration");
+            parsedBody.push(
+              touchHoldItem(zoneTyped, positionNum, { division: 8, divisionCount: 0 }, isHanabi),
+            );
+            continue;
+          }
+          parsedBody.push(
+            touchHoldItem(zoneTyped, positionNum, {
+              bpm: touchBpm ? +touchBpm.replace("#", "") : undefined,
+              division: +touchDivision,
+              divisionCount: +count,
+            }, isHanabi),
+          );
+        } else {
+          parsedBody.push(touchItem(zoneTyped, positionNum, isHanabi));
+        }
+        continue;
+      }
     }
 
     const noteMatch = part.match(noteExp);
     if (noteMatch?.groups) {
-      const { lane, modifiers, hold, slide, body } = noteMatch.groups;
+      const { lane, hold, slide } = noteMatch.groups;
       if (hold) {
         const { duration, bpm, division, count } =
           hold.match(holdExp)?.groups ?? {};
@@ -480,7 +509,7 @@ function parseSimaiNoteWithErrors(
     return [];
   }
 
-  const [_, bpm, division, body] = timeSignatureMatch;
+  const [, bpm, division, body] = timeSignatureMatch;
 
   if (bpm) {
     const bpmValue = parseFloat(bpm);
@@ -526,14 +555,73 @@ function parseSimaiNoteWithErrors(
 
   for (const part of parts) {
     const touchMatch = part.match(touchExp);
-    if (touchMatch) {
-      // TODO: touch notes
+    if (touchMatch?.groups) {
+      const { zone, position, hold, hanabi, duration, bpm, division, count } =
+        touchMatch.groups;
+      
+      const isEndMarker = !position && !hold && zone === "E";
+      if (isEndMarker) {
+        continue;
+      }
+      
+      const zoneTyped = zone as "A" | "B" | "C" | "D" | "E";
+      const positionNum = position ? +position : 1;
+      const isHanabi = !!hanabi;
+
+      if (hold) {
+        if (!duration) {
+          errors.push(
+            new SimaiParseError(
+              `Touch hold missing duration`,
+              undefined,
+              undefined,
+              "warning",
+              "Add duration like Ch[4:1]",
+            ),
+          );
+          parsedBody.push(
+            touchHoldItem(zoneTyped, positionNum, { division: 8, divisionCount: 0 }, isHanabi),
+          );
+          continue;
+        }
+        const divValue = parseInt(division, 10);
+        const countValue = parseInt(count, 10);
+        if (isNaN(divValue) || divValue <= 0) {
+          errors.push(
+            new SimaiParseError(
+              `Invalid touch hold division: "${division}"`,
+              undefined,
+              undefined,
+              "error",
+            ),
+          );
+        }
+        if (isNaN(countValue) || countValue < 0) {
+          errors.push(
+            new SimaiParseError(
+              `Invalid touch hold count: "${count}"`,
+              undefined,
+              undefined,
+              "error",
+            ),
+          );
+        }
+        parsedBody.push(
+          touchHoldItem(zoneTyped, positionNum, {
+            bpm: bpm ? +bpm.replace("#", "") : undefined,
+            division: divValue,
+            divisionCount: countValue,
+          }, isHanabi),
+        );
+      } else {
+        parsedBody.push(touchItem(zoneTyped, positionNum, isHanabi));
+      }
       continue;
     }
 
     const noteMatch = part.match(noteExp);
     if (noteMatch?.groups) {
-      const { lane, modifiers, hold, slide } = noteMatch.groups;
+      const { lane, hold, slide } = noteMatch.groups;
       const laneNum = parseInt(lane, 10);
 
       if (isNaN(laneNum) || laneNum < 1 || laneNum > 8) {

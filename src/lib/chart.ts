@@ -33,6 +33,23 @@ export interface SlideChartData {
   destinationLane: number;
 }
 
+export type TouchZone = "A" | "B" | "C" | "D" | "E";
+
+export interface TouchChartData {
+  type: "touch";
+  zone: TouchZone;
+  position: number;
+  isHanabi: boolean;
+}
+
+export interface TouchHoldChartData {
+  type: "touchHold";
+  zone: TouchZone;
+  position: number;
+  duration: DurationInBpm;
+  isHanabi: boolean;
+}
+
 export interface TimeSignature {
   bpm?: number;
   division: number;
@@ -42,7 +59,12 @@ export interface Rest {
   divisionCount: number;
 }
 
-export type NoteData = TapChartData | HoldChartData | SlideChartData;
+export type NoteData =
+  | TapChartData
+  | HoldChartData
+  | SlideChartData
+  | TouchChartData
+  | TouchHoldChartData;
 
 export type ChartItem =
   | { type: "note"; data: NoteData }
@@ -126,6 +148,40 @@ export function restItem(divisionCount: number) {
     data: {
       divisionCount,
     } as Rest,
+  };
+}
+
+export function touchItem(
+  zone: TouchZone,
+  position: number,
+  isHanabi: boolean,
+) {
+  return {
+    type: "note" as const,
+    data: {
+      type: "touch",
+      zone,
+      position,
+      isHanabi,
+    } as TouchChartData,
+  };
+}
+
+export function touchHoldItem(
+  zone: TouchZone,
+  position: number,
+  duration: DurationInBpm,
+  isHanabi: boolean,
+) {
+  return {
+    type: "note" as const,
+    data: {
+      type: "touchHold",
+      zone,
+      position,
+      duration,
+      isHanabi,
+    } as TouchHoldChartData,
   };
 }
 
