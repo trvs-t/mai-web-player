@@ -50,7 +50,11 @@ export type ChartItem =
   | { type: "timeSignature"; data: TimeSignature };
 
 export interface ChartMetadata {
-  title: string;
+  title?: string;
+  artist?: string;
+  bpm?: number;
+  charter?: string;
+  difficulty?: string;
 }
 export interface Chart {
   items: (ChartItem | { type: "note"; data: NoteData }[])[];

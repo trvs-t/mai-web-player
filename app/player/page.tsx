@@ -15,9 +15,10 @@ import {
   TimerProvider,
   TimerContext,
 } from "./context/timer";
+import { MetadataPanel } from "./components/metadata-panel";
 import { TimerControls } from "./controls";
 import { Chart } from "./data/chart";
-import { parseSimaiChart } from "./data/simai";
+import { parseSimai } from "./data/simai";
 import { Player } from "./player";
 import { Metronome } from "./view/metronome";
 import { SlidePaths } from "./view/slide/slide-paths";
@@ -88,15 +89,7 @@ const Page = () => {
 
   const [simai, setSimai] = useState<string>("");
   const chart: Chart | null = useMemo(
-    () =>
-      simai.length
-        ? {
-            metadata: {
-              title: "test",
-            },
-            items: parseSimaiChart(simai),
-          }
-        : null,
+    () => (simai.length ? parseSimai(simai) : null),
     [simai]
   );
 
@@ -144,6 +137,7 @@ const Page = () => {
               className="text-sm"
             />
           </div>
+          <MetadataPanel metadata={chart?.metadata ?? {}} />
         </div>
         <div className="w-full">
           <label className="block text-sm font-medium mb-2">

@@ -67,7 +67,7 @@ export const FreeRunChartContext = createContext<ChartContextType>({
 });
 
 function extractBaseBpm(chart: Chart | null | undefined): number {
-  if (!chart?.items.length) return 120;
+  if (!chart?.items.length) return chart?.metadata.bpm ?? 120;
   const firstItem = chart.items[0];
   if (
     !Array.isArray(firstItem) &&
@@ -76,7 +76,7 @@ function extractBaseBpm(chart: Chart | null | undefined): number {
   ) {
     return firstItem.data.bpm;
   }
-  return 120;
+  return chart.metadata.bpm ?? 120;
 }
 
 export function FreeRunTimerProvider({

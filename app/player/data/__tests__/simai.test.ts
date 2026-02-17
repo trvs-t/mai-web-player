@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { parseSimaiChart } from "../simai";
+import { parseMetadata, parseSimai, parseSimaiChart, exportMetadata } from "../simai";
 import type { HoldChartData, SlideChartData } from "../chart";
 import {
   expectValidChart,
@@ -817,5 +817,179 @@ E`;
 E`;
     const result = parseSimaiChart(chart);
     expect(result).toMatchSnapshot("all-tap-variants");
+  });
+});
+
+describe("Metadata Parsing", () => {
+  describe("parseMetadata", () => {
+    it("should parse header format &title", () => {
+      const { metadata, notes } = parseMetadata("&title=My Song\n(120){4}1,E");
+      expect(metadata.title).toBe("My Song");
+      expect(notes).toBe("(120){4}1,E");
+    });
+
+    it("should parse header format &artist", () => {
+      const { metadata, notes } = parseMetadata("&artist=Artist Name\n(120){4}1,E");
+      expect(metadata.artist).toBe("Artist Name");
+    });
+
+    it("should parse header format &bpm", () => {
+      const { metadata, notes } = parseMetadata("&bpm=150\n(120){4}1,E");
+      expect(metadata.bpm).toBe(150);
+    });
+
+    it("should parse header format &charter", () => {
+      const { metadata, notes } = parseMetadata("&charter=Charter Name\n(120){4}1,E");
+      expect(metadata.charter).toBe("Charter Name");
+    });
+
+    it("should parse header format &difficulty", () => {
+      const { metadata, notes } = parseMetadata("&difficulty=13+\n(120){4}1,E");
+      expect(metadata.difficulty).toBe("13+");
+    });
+
+    it("should parse comment format # TITLE:", () => {
+      const { metadata, notes } = parseMetadata("# TITLE: My Song\n(120){4}1,E");
+      expect(metadata.title).toBe("My Song");
+    });
+
+    it("should parse comment format # ARTIST =", () => {
+      const { metadata, notes } = parseMetadata("# ARTIST = Artist Name\n(120){4}1,E");
+      expect(metadata.artist).toBe("Artist Name");
+    });
+
+    it("should parse comment format # BPM:", () => {
+      const { metadata, notes } = parseMetadata("# BPM: 150\n(120){4}1,E");
+      expect(metadata.bpm).toBe(150);
+    });
+
+    it("should parse comment format # CHARTER:", () => {
+      const { metadata, notes } = parseMetadata("# CHARTER: Charter Name\n(120){4}1,E");
+      expect(metadata.charter).toBe("Charter Name");
+    });
+
+    it("should parse comment format # MAPPER:", () => {
+      const { metadata, notes } = parseMetadata("# MAPPER: Mapper Name\n(120){4}1,E");
+      expect(metadata.charter).toBe("Mapper Name");
+    });
+
+    it("should parse comment format # AUTHOR:", () => {
+      const { metadata, notes } = parseMetadata("# AUTHOR: Author Name\n(120){4}1,E");
+      expect(metadata.charter).toBe("Author Name");
+    });
+
+    it("should parse comment format # DIFFICULTY:", () => {
+      const { metadata, notes } = parseMetadata("# DIFFICULTY: 13+\n(120){4}1,E");
+      expect(metadata.difficulty).toBe("13+");
+    });
+
+    it("should parse comment format # LEVEL:", () => {
+      const { metadata, notes } = parseMetadata("# LEVEL: 12\n(120){4}1,E");
+      expect(metadata.difficulty).toBe("12");
+    });
+
+    it("should parse multiple metadata fields", () => {
+      const { metadata, notes } = parseMetadata(
+        "&title=My Song\n&artist=Artist Name\n&bpm=150\n&charter=Charter Name\n&difficulty=13+\n(120){4}1,E"
+      );
+      expect(metadata.title).toBe("My Song");
+      expect(metadata.artist).toBe("Artist Name");
+      expect(metadata.bpm).toBe(150);
+      expect(metadata.charter).toBe("Charter Name");
+      expect(metadata.difficulty).toBe("13+");
+      expect(notes).toBe("(120){4}1,E");
+    });
+
+    it("should handle mixed header and comment formats", () => {
+      const { metadata, notes } = parseMetadata(
+        "&title=My Song\n# ARTIST: Artist Name\n(120){4}1,E"
+      );
+      expect(metadata.title).toBe("My Song");
+      expect(metadata.artist).toBe("Artist Name");
+    });
+
+    it("should handle case-insensitive keys", () => {
+      const { metadata } = parseMetadata("&TITLE=Title\n# Artist: Artist\n# BPM: 150");
+      expect(metadata.title).toBe("Title");
+      expect(metadata.artist).toBe("Artist");
+      expect(metadata.bpm).toBe(150);
+    });
+
+    it("should return empty metadata for input without metadata", () => {
+      const { metadata, notes } = parseMetadata("(120){4}1,E");
+      expect(metadata).toEqual({});
+      expect(notes).toBe("(120){4}1,E");
+    });
+
+    it("should handle empty lines in input", () => {
+      const { metadata, notes } = parseMetadata("\n\n&title=My Song\n\n(120){4}1,E\n\n");
+      expect(metadata.title).toBe("My Song");
+      expect(notes).toBe("(120){4}1,E");
+    });
+
+    it("should parse fractional BPM", () => {
+      const { metadata } = parseMetadata("&bpm=128.5\n(120){4}1,E");
+      expect(metadata.bpm).toBe(128.5);
+    });
+
+    it("should ignore invalid header format", () => {
+      const { metadata, notes } = parseMetadata("&invalid\n(120){4}1,E");
+      expect(metadata).toEqual({});
+      expect(notes).toBe("&invalid\n(120){4}1,E");
+    });
+
+    it("should ignore invalid comment format", () => {
+      const { metadata, notes } = parseMetadata("# invalid\n(120){4}1,E");
+      expect(metadata).toEqual({});
+      expect(notes).toBe("# invalid\n(120){4}1,E");
+    });
+  });
+
+  describe("parseSimai", () => {
+    it("should parse full chart with metadata", () => {
+      const chart = parseSimai("&title=My Song\n&bpm=150\n(120){4}1,2,3,E");
+      expect(chart.metadata.title).toBe("My Song");
+      expect(chart.metadata.bpm).toBe(150);
+      expect(chart.items.length).toBeGreaterThan(0);
+    });
+
+    it("should handle chart without metadata", () => {
+      const chart = parseSimai("(120){4}1,2,3,E");
+      expect(chart.metadata).toEqual({});
+      expect(chart.items.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe("exportMetadata", () => {
+    it("should export all metadata fields", () => {
+      const result = exportMetadata({
+        title: "My Song",
+        artist: "Artist Name",
+        bpm: 150,
+        charter: "Charter Name",
+        difficulty: "13+",
+      });
+      expect(result).toBe("&title=My Song\n&artist=Artist Name\n&bpm=150\n&charter=Charter Name\n&difficulty=13+");
+    });
+
+    it("should export only provided fields", () => {
+      const result = exportMetadata({ title: "My Song", bpm: 150 });
+      expect(result).toBe("&title=My Song\n&bpm=150");
+    });
+
+    it("should return empty string for empty metadata", () => {
+      const result = exportMetadata({});
+      expect(result).toBe("");
+    });
+
+    it("should handle undefined values gracefully", () => {
+      const result = exportMetadata({ title: undefined, bpm: undefined });
+      expect(result).toBe("");
+    });
+
+    it("should handle string BPM", () => {
+      const result = exportMetadata({ bpm: 120 });
+      expect(result).toBe("&bpm=120");
+    });
   });
 });

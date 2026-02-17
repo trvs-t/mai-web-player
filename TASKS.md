@@ -48,7 +48,7 @@ Enable chart visualization without requiring an audio file. This is essential fo
 
 ### 2. Chart Metadata Support
 **Priority**: 🟠 High  
-**Status**: ⏳ Not Started  
+**Status**: ✅ Complete  
 **Dependencies**: None  
 **Estimated Effort**: Low
 
@@ -68,17 +68,21 @@ Parse and display chart metadata (title, artist, BPM, difficulty, charter name) 
 - Store metadata in `Chart` type
 - Display in a collapsible info panel
 - Support exporting metadata back to simai format
+- Added BPM fallback in player components
 
 **Acceptance Criteria**:
-- [ ] Parser extracts metadata from simai comments/headers
-- [ ] Metadata displayed in UI (title, artist, BPM, charter, difficulty)
-- [ ] Editable metadata fields in editor
-- [ ] Metadata persisted when saving/exporting
+- [x] Parser extracts metadata from simai comments/headers
+- [x] Metadata displayed in UI (title, artist, BPM, charter, difficulty)
+- [x] Editable metadata fields in editor
+- [x] Metadata persisted when saving/exporting
 
-**Files to Modify**:
+**Files Modified**:
 - `app/player/data/chart.ts` - Add metadata types
-- `app/player/data/simai.ts` - Parse header comments
+- `app/player/data/simai.ts` - Parse header comments, export metadata
 - `app/player/page.tsx` - Add metadata panel UI
+- `app/player/context/audio.tsx` - BPM fallback
+- `app/player/data/visualization.ts` - BPM fallback
+- `app/player/components/metadata-panel.tsx` - New component
 
 ---
 

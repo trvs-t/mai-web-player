@@ -7,17 +7,126 @@ import {
   tapItem,
   timeSignatureItem,
   type Chart,
+  type ChartMetadata,
 } from "./chart";
 
-export function parseSimaiChart(i_note: string) {
+export function parseMetadata(input: string): {
+  metadata: ChartMetadata;
+  notes: string;
+} {
+  const metadata: ChartMetadata = {};
+  const lines = input.split(/\r?\n/);
+  const noteLines: string[] = [];
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+
+    if (trimmed.startsWith("&")) {
+      const match = trimmed.match(/^&([^=]+)=(.*)$/);
+      if (match) {
+        const [, key, value] = match;
+        switch (key.toLowerCase()) {
+          case "title":
+            metadata.title = value;
+            break;
+          case "artist":
+            metadata.artist = value;
+            break;
+          case "bpm":
+            const bpm = parseFloat(value);
+            if (!isNaN(bpm)) metadata.bpm = bpm;
+            break;
+          case "charter":
+            metadata.charter = value;
+            break;
+          case "difficulty":
+            metadata.difficulty = value;
+            break;
+        }
+        continue;
+      }
+    }
+
+    if (trimmed.startsWith("#")) {
+      const comment = trimmed.slice(1).trim();
+      const match = comment.match(/^([^:=]+)[:=](.*)$/);
+      if (match) {
+        const [, key, value] = match;
+        const normalizedKey = key.trim().toLowerCase();
+        const normalizedValue = value.trim();
+
+        switch (normalizedKey) {
+          case "title":
+            metadata.title = normalizedValue;
+            break;
+          case "artist":
+            metadata.artist = normalizedValue;
+            break;
+          case "bpm":
+            const bpm = parseFloat(normalizedValue);
+            if (!isNaN(bpm)) metadata.bpm = bpm;
+            break;
+          case "charter":
+          case "mapper":
+          case "author":
+            metadata.charter = normalizedValue;
+            break;
+          case "difficulty":
+          case "level":
+            metadata.difficulty = normalizedValue;
+            break;
+        }
+        continue;
+      }
+    }
+
+    if (trimmed) {
+      noteLines.push(line);
+    }
+  }
+
+  const notes = noteLines.join("\n");
+
+  return { metadata, notes };
+}
+
+export function parseSimaiChart(i_note: string): Chart["items"] {
   const parts = i_note
-    .replace("\n", "")
-    .replace("\t", "")
-    .replace(" ", "")
+    .replace(/\n/g, "")
+    .replace(/\t/g, "")
+    .replace(/ /g, "")
     .trim()
     .split(",");
   const result = parts.map(parseSimaiNote).flat();
   return result;
+}
+
+export function parseSimai(input: string): Chart {
+  const { metadata, notes } = parseMetadata(input);
+  const items = parseSimaiChart(notes);
+  return { metadata, items };
+}
+
+export function exportMetadata(metadata: ChartMetadata): string {
+  const lines: string[] = [];
+
+  if (metadata.title) {
+    lines.push(`&title=${metadata.title}`);
+  }
+  if (metadata.artist) {
+    lines.push(`&artist=${metadata.artist}`);
+  }
+  if (metadata.bpm) {
+    lines.push(`&bpm=${metadata.bpm}`);
+  }
+  if (metadata.charter) {
+    lines.push(`&charter=${metadata.charter}`);
+  }
+  if (metadata.difficulty) {
+    lines.push(`&difficulty=${metadata.difficulty}`);
+  }
+
+  return lines.join("\n");
 }
 
 const timeSignatureExp = /^(?:\((\d+\.?\d+)\))?(?:\{(\d+)\})?(.*)$/;

@@ -46,15 +46,23 @@ export type NoteVisualization =
 export function convertChartVisualizationData(chart: Chart) {
   let time = 0;
   const baseTimeSignature = chart.items[0];
+  let currentBpm: number;
+  let currentDivision: number;
+
   if (
     Array.isArray(baseTimeSignature) ||
-    baseTimeSignature.type !== "timeSignature" ||
-    !baseTimeSignature.data.bpm
+    baseTimeSignature.type !== "timeSignature"
   ) {
-    throw new Error("Invalid chart");
+    if (chart.metadata.bpm) {
+      currentBpm = chart.metadata.bpm;
+      currentDivision = 4;
+    } else {
+      throw new Error("Invalid chart");
+    }
+  } else {
+    currentBpm = baseTimeSignature.data.bpm ?? chart.metadata.bpm ?? 120;
+    currentDivision = baseTimeSignature.data.division;
   }
-  let currentBpm = baseTimeSignature.data.bpm;
-  let currentDivision = baseTimeSignature.data.division;
 
   let notes: NoteVisualization[] = [];
 
