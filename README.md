@@ -13,6 +13,7 @@ A web-based chart visualizer for **maimai**, a circular touch-based rhythm game.
 ## Demo
 
 Visit `/player` to access the visualizer interface. You'll find:
+
 - A simai chart editor (textarea)
 - Audio file upload
 - Playback controls (play, pause, reset)
@@ -22,7 +23,7 @@ Visit `/player` to access the visualizer interface. You'll find:
 
 ### Prerequisites
 
-- Node.js 16+ 
+- Node.js 16+
 - npm, yarn, or pnpm
 
 ### Installation
@@ -50,6 +51,7 @@ E
 ```
 
 This creates:
+
 - BPM 120, 4th note division
 - Sequential taps on all 8 lanes
 - Simultaneous tap pairs (EACH)
@@ -58,6 +60,7 @@ This creates:
 ## Features
 
 ### Implemented
+
 - Simai syntax parsing
 - Tap, Hold, and Slide note rendering
 - Audio synchronization with Howler.js
@@ -65,6 +68,7 @@ This creates:
 - Real-time note animation with PixiJS
 
 ### Note Types Supported
+
 - ✅ Tap notes (including BREAK and EX variants)
 - ✅ Hold notes with configurable duration
 - ✅ Slide notes:
@@ -81,11 +85,12 @@ This creates:
 - ✅ Connected slides (slide chains)
 
 ### Not Implemented (Out of Scope)
-- Touch/Touch Hold notes
-- WiFi slides (`w`)
-- User input/judgment
-- Score calculation
-- Touch sensor visualization
+
+- ❌ Touch/Touch Hold notes
+- ❌ WiFi slides (`w`)
+- ❌ User input/judgment
+- ❌ Score calculation
+- ❌ Touch sensor visualization
 
 ## Documentation
 
@@ -94,33 +99,37 @@ This creates:
 
 ## Tech Stack
 
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| Next.js | 13.3.0 | React framework with App Router |
-| React | 18.2.0 | UI library |
-| TypeScript | 5.0.4 | Type safety |
-| PixiJS | 7.2.4 | 2D WebGL rendering |
-| @pixi/react | 7.0.3 | React bindings for PixiJS |
-| Howler | 2.2.3 | Audio playback |
-| Tailwind CSS | 3.3.1 | Styling |
+| Technology     | Version | Purpose                   |
+| -------------- | ------- | ------------------------- |
+| TanStack Start | 1.114+  | React framework with Vite |
+| React          | 18.2.0  | UI library                |
+| TypeScript     | 5.0.4   | Type safety               |
+| PixiJS         | 7.2.4   | 2D WebGL rendering        |
+| @pixi/react    | 7.0.3   | React bindings for PixiJS |
+| Howler         | 2.2.3   | Audio playback            |
+| Tailwind CSS   | 3.3.1   | Styling                   |
+| oxlint         | 1.48+   | Rust-based linter         |
+| oxfmt          | 0.33+   | Rust-based formatter      |
 
 ## Project Structure
 
 ```
-app/
-├── player/              # Main visualizer application
-│   ├── page.tsx         # Player entry page
-│   ├── player.tsx       # Main player component
-│   ├── controls.tsx     # Playback controls
-│   ├── context/         # React contexts (audio, timer, chart, etc.)
-│   ├── data/            # Data models and simai parser
-│   ├── view/            # Pixi rendering components
-│   └── animation/       # Animation hooks
-├── page.tsx             # Home page
-└── layout.tsx           # Root layout
+src/
+├── routes/              # TanStack Router routes
+│   ├── __root.tsx     # Root layout
+│   ├── index.tsx      # Home page
+│   └── player.tsx     # Player route
+├── contexts/          # React contexts
+├── components/        # React components
+│   ├── view/          # Pixi rendering components
+│   └── controls.tsx   # Playback controls
+├── lib/               # Simai parser and types
+├── hooks/             # Animation hooks
+└── app.tsx            # Application entry
 
-utils/                   # Utility functions
-public/                  # Static assets
+utils/                 # Utility functions
+public/                # Static assets
+dist/                  # Vite build output
 ```
 
 ## Development
@@ -128,25 +137,45 @@ public/                  # Static assets
 ### Available Scripts
 
 ```bash
-npm run dev      # Start dev server with Turbo (port 3001)
-npm run build    # Build for production
-npm run start    # Start production server
-npm run lint     # Run ESLint
+# Dev server (port 3001)
+npm run dev
+
+# Production build
+npm run build
+
+# Preview production build
+npm run preview
+
+# Lint with oxlint (Rust-based, fast)
+npm run lint
+npm run lint:fix
+
+# Format with oxfmt (Prettier-compatible)
+npm run format
+npm run format:check
+
+# Type check + lint + format check
+npm run check
+
+# Run tests
+npm run test
+npm run test:watch
 ```
 
 ### Adding New Features
 
 When adding new features:
-1. Check existing patterns in `app/player/view/` for rendering components
-2. Update simai parser in `app/player/data/simai.ts` for new syntax
-3. Add types to `app/player/data/chart.ts`
-4. Update visualization converter in `app/player/data/visualization.ts`
+
+1. Check existing patterns in `src/components/view/` for rendering components
+2. Update simai parser in `src/lib/simai.ts` for new syntax
+3. Add types to `src/lib/chart.ts`
+4. Update visualization converter in `src/lib/visualization.ts`
 
 ## Resources
 
 - [Simai Notation Wiki (Japanese)](https://w.atwiki.jp/simai/pages/1002.html) - Official simai syntax reference
 - [PixiJS Documentation](https://pixijs.download/release/docs/index.html)
-- [Next.js Documentation](https://nextjs.org/docs)
+- [TanStack Start Documentation](https://tanstack.com/start/latest)
 
 ## License
 
@@ -155,7 +184,8 @@ This project is for educational purposes. maimai is a trademark of SEGA. Simai n
 ## Contributing
 
 Contributions are welcome! Please ensure:
+
 1. Code follows existing TypeScript patterns
 2. Components use the established context pattern
 3. New note types follow the data -> visualization -> render pipeline
-4. Run `npm run lint` before submitting
+4. Run `npm run check` before submitting

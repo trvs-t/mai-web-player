@@ -108,16 +108,16 @@ import {
 
 ### Helper Functions
 
-| Function | Purpose |
-|----------|---------|
-| `createChartInput(simai)` | Wraps raw simai input with proper formatting |
-| `expectValidChart(result)` | Validates chart has correct structure |
-| `expectNoteType(item, type)` | Asserts a note is of a specific type |
-| `expectLane(item, lane)` | Asserts a note is on a specific lane |
-| `extractNotes(result)` | Extracts all notes from parsed chart |
-| `countNotes(result)` | Counts total notes in chart |
-| `findFirstNote(result)` | Finds first note in chart |
-| `findFirstNoteOfType(result, type)` | Finds first note of specific type |
+| Function                            | Purpose                                      |
+| ----------------------------------- | -------------------------------------------- |
+| `createChartInput(simai)`           | Wraps raw simai input with proper formatting |
+| `expectValidChart(result)`          | Validates chart has correct structure        |
+| `expectNoteType(item, type)`        | Asserts a note is of a specific type         |
+| `expectLane(item, lane)`            | Asserts a note is on a specific lane         |
+| `extractNotes(result)`              | Extracts all notes from parsed chart         |
+| `countNotes(result)`                | Counts total notes in chart                  |
+| `findFirstNote(result)`             | Finds first note in chart                    |
+| `findFirstNoteOfType(result, type)` | Finds first note of specific type            |
 
 ### Test Fixtures
 
@@ -138,42 +138,42 @@ import {
 
 ```typescript
 // Equality
-expect(value).toBe(expected)
-expect(value).toEqual(expected)
+expect(value).toBe(expected);
+expect(value).toEqual(expected);
 
 // Truthiness
-expect(value).toBeTruthy()
-expect(value).toBeFalsy()
-expect(value).toBeNull()
-expect(value).toBeUndefined()
+expect(value).toBeTruthy();
+expect(value).toBeFalsy();
+expect(value).toBeNull();
+expect(value).toBeUndefined();
 
 // Numbers
-expect(value).toBeGreaterThan(n)
-expect(value).toBeLessThan(n)
-expect(value).toBeCloseTo(n, digits)
+expect(value).toBeGreaterThan(n);
+expect(value).toBeLessThan(n);
+expect(value).toBeCloseTo(n, digits);
 
 // Arrays
-expect(array).toContain(item)
-expect(array).toHaveLength(n)
+expect(array).toContain(item);
+expect(array).toHaveLength(n);
 
 // Objects
-expect(obj).toHaveProperty("key")
-expect(obj).toMatchObject(partial)
+expect(obj).toHaveProperty("key");
+expect(obj).toMatchObject(partial);
 
 // Errors
-expect(() => fn()).toThrow()
-expect(() => fn()).toThrow("error message")
+expect(() => fn()).toThrow();
+expect(() => fn()).toThrow("error message");
 ```
 
 ## Running Tests
 
-| Command | Description |
-|---------|-------------|
-| `bun test` | Run all tests |
-| `bun test --watch` | Run tests in watch mode |
-| `bun test --coverage` | Run with coverage report |
-| `bun test path/to/file.test.ts` | Run specific file |
-| `bun test --grep "pattern"` | Run tests matching pattern |
+| Command                         | Description                |
+| ------------------------------- | -------------------------- |
+| `bun test`                      | Run all tests              |
+| `bun test --watch`              | Run tests in watch mode    |
+| `bun test --coverage`           | Run with coverage report   |
+| `bun test path/to/file.test.ts` | Run specific file          |
+| `bun test --grep "pattern"`     | Run tests matching pattern |
 
 ## Troubleshooting
 

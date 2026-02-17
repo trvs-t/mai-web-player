@@ -7,7 +7,7 @@ This document provides a technical overview of the mai-web-player codebase for d
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                        User Interface                        │
-│                   (Next.js + React + Tailwind)              │
+│                   (TanStack Start + React + Tailwind)              │
 └─────────────────────────────────────────────────────────────┘
                               │
                               ▼
@@ -52,9 +52,9 @@ type TimeMs = number;
 
 // Notes have hit times calculated from BPM and beat positions
 interface NoteTiming {
-  hitTime: number;      // When note reaches judgment ring (ms)
-  startTime: number;    // When note appears on screen (ms)
-  duration?: number;    // For holds/slides (ms)
+  hitTime: number; // When note reaches judgment ring (ms)
+  startTime: number; // When note appears on screen (ms)
+  duration?: number; // For holds/slides (ms)
 }
 ```
 
@@ -76,7 +76,7 @@ The visualizer uses a polar coordinate system centered on the screen:
                ⑤    │    ④
                     │
                     Y+
-                    
+
         ←─────────── X+ ───────────→
 ```
 
@@ -85,6 +85,7 @@ The visualizer uses a polar coordinate system centered on the screen:
 - **Lanes**: 8 positions at 45° intervals (0°, 45°, 90°, etc.)
 
 **Lane Position Calculation**:
+
 ```typescript
 // From utils/lane.ts
 function getLanePosition(lane: 1-8, radius: number): [x, y] {
@@ -108,6 +109,7 @@ Creation → Spawn → Travel → Hit → (Hold/Slide continues) → Release
 ```
 
 **Travel Animation**:
+
 - Notes spawn at `hitTime - noteDuration` (e.g., 1000ms before hit)
 - Move from outer radius toward judgment ring
 - Hit the ring exactly at `hitTime`
@@ -117,6 +119,7 @@ Creation → Spawn → Travel → Hit → (Hold/Slide continues) → Release
 ### Step 1: Parsing (simai.ts)
 
 **Input**: Raw simai string
+
 ```
 (120){4}
 1,2,1h[4:1],1-5[4:1],
@@ -124,19 +127,21 @@ E
 ```
 
 **Process**:
+
 1. Split by commas
 2. Parse timing directives `(BPM){division}`
 3. Parse note syntax with regex patterns
 4. Calculate beat positions
 
 **Output**: `Chart` object (beat-based)
+
 ```typescript
 interface Chart {
-  items: ChartItem[];  // Sorted by beat position
+  items: ChartItem[]; // Sorted by beat position
 }
 
 interface ChartItem {
-  time: BeatTime;      // { beat: number, division: number }
+  time: BeatTime; // { beat: number, division: number }
   notes: NoteData[];
 }
 ```
@@ -144,21 +149,24 @@ interface ChartItem {
 ### Step 2: Visualization Conversion (visualization.ts)
 
 **Process**:
+
 1. Convert beat positions to milliseconds using BPM
 2. Calculate `hitTime`, `startTime`, `duration` for each note
 3. Group notes by lane for efficient rendering
 
 **Output**: `VisualizationData` (time-based, ready for rendering)
+
 ```typescript
 interface VisualizationData {
   items: VisualizationItem[];
-  duration: number;  // Total chart duration
+  duration: number; // Total chart duration
 }
 ```
 
 ### Step 3: Rendering (view components)
 
 **Process**:
+
 1. Subscribe to `TimerContext` for current time
 2. Calculate progress: `(hitTime - currentTime) / noteDuration`
 3. Map progress to position (outer radius → judgment ring)
@@ -166,15 +174,16 @@ interface VisualizationData {
 
 ## Key Files and Their Roles
 
-### Data Layer (`app/player/data/`)
+### Data Layer (`src/lib/`)
 
-| File | Purpose | Key Exports |
-|------|---------|-------------|
-| `chart.ts` | Type definitions | `Chart`, `ChartItem`, `NoteData`, `SlideType` |
-| `simai.ts` | Simai parser | `parseSimaiChart()`, regex patterns |
-| `visualization.ts` | Time conversion | `convertChartVisualizationData()` |
+| File               | Purpose          | Key Exports                                   |
+| ------------------ | ---------------- | --------------------------------------------- |
+| `chart.ts`         | Type definitions | `Chart`, `ChartItem`, `NoteData`, `SlideType` |
+| `simai.ts`         | Simai parser     | `parseSimaiChart()`, regex patterns           |
+| `visualization.ts` | Time conversion  | `convertChartVisualizationData()`             |
 
 **Parser Regex Patterns** (in `simai.ts`):
+
 ```typescript
 const timeSignatureExp = /\((\d+(?:\.\d+)?)\)\{(\d+)\}/;
 const noteExp = /([1-8])([bx$@]?)/;
@@ -182,17 +191,18 @@ const holdExp = /([1-8])h\[(\d+):(\d+)\]/;
 const slideExp = /([1-8])([-<>pq^vVsz]|pp|qq)([1-8])([1-8]?)\[(\d+):(\d+)\]/;
 ```
 
-### Context Layer (`app/player/context/`)
+### Context Layer (`src/contexts/`)
 
-| File | Purpose | Key Exports |
-|------|---------|-------------|
-| `timer.tsx` | Playback time | `TimerContext`, `TimeControlContext` |
-| `audio.tsx` | Audio sync | `AudioContext`, `AudioTimerProvider` |
-| `chart.ts` | Chart data | `ChartContext` |
-| `player.ts` | Visual config | `PlayerContext` (radius, duration, etc.) |
-| `bridge.tsx` | Pixi bridge | `ContextBridge` |
+| File         | Purpose       | Key Exports                              |
+| ------------ | ------------- | ---------------------------------------- |
+| `timer.tsx`  | Playback time | `TimerContext`, `TimeControlContext`     |
+| `audio.tsx`  | Audio sync    | `AudioContext`, `AudioTimerProvider`     |
+| `chart.ts`   | Chart data    | `ChartContext`                           |
+| `player.ts`  | Visual config | `PlayerContext` (radius, duration, etc.) |
+| `bridge.tsx` | Pixi bridge   | `ContextBridge`                          |
 
 **Audio Sync** (`audio.tsx`):
+
 ```typescript
 useTick(() => {
   if (!isPlaying) return;
@@ -204,33 +214,34 @@ useTick(() => {
 **Why Context Bridge?**
 Pixi's `<Stage>` runs in a separate React tree. `ContextBridge` forwards contexts into the Pixi tree.
 
-### View Layer (`app/player/view/`)
+### View Layer (`src/components/view/`)
 
-| File | Renders | Key Feature |
-|------|---------|-------------|
-| `tap.tsx` | Tap notes | Pink/yellow circles, lane movement |
-| `hold.tsx` | Hold notes | Hexagons with duration |
-| `ring.tsx` | Judgment ring | White circle with touch points |
-| `slide/slide.tsx` | Slide paths | SVG path-based rendering |
-| `slide/star.tsx` | Slide stars | Blue stars at slide start |
+| File              | Renders       | Key Feature                        |
+| ----------------- | ------------- | ---------------------------------- |
+| `tap.tsx`         | Tap notes     | Pink/yellow circles, lane movement |
+| `hold.tsx`        | Hold notes    | Hexagons with duration             |
+| `ring.tsx`        | Judgment ring | White circle with touch points     |
+| `slide/slide.tsx` | Slide paths   | SVG path-based rendering           |
+| `slide/star.tsx`  | Slide stars   | Blue stars at slide start          |
 
-**Lane Movement Hook** (`animation/lane.ts`):
+**Lane Movement Hook** (`hooks/lane.ts`):
+
 ```typescript
 function useLaneMovement(hitTime: number) {
   const currentTime = useContext(TimerContext);
   const timeUntilHit = hitTime - currentTime;
-  const progress = 1 - (timeUntilHit / NOTE_DURATION);
+  const progress = 1 - timeUntilHit / NOTE_DURATION;
   const position = lerp(OUTER_RADIUS, INNER_RADIUS, progress);
   return position;
 }
 ```
 
-### Animation Layer (`app/player/animation/`)
+### Animation Layer (`src/hooks/`)
 
-| File | Purpose |
-|------|---------|
-| `lane.ts` | Note position calculation |
-| `timer-tween.ts` | Time-based interpolation |
+| File             | Purpose                   |
+| ---------------- | ------------------------- |
+| `lane.ts`        | Note position calculation |
+| `timer-tween.ts` | Time-based interpolation  |
 
 ## Slide Rendering Architecture
 
@@ -239,27 +250,29 @@ Slides are the most complex notes. Here's how they work:
 ### Path Resolution
 
 **SVG Path Approach**:
+
 1. Paths are defined as SVG in `slide/slide-paths.tsx`
 2. At runtime, SVG is queried from DOM
 3. Path data is extracted and converted to Pixi graphics
 
 **Why SVG?**:
+
 - Easy to visualize and edit
 - Supports complex curves
 - Can be mirrored for different directions
 
 ### Slide Types and Their SVG Paths
 
-| Type | Symbol | Path Description |
-|------|--------|------------------|
-| Straight | `-` | Line from start to end |
-| Circle CW | `>` | Arc clockwise around center |
-| Circle CCW | `<` | Arc counter-clockwise |
-| U-shape | `p`/`q` | Arc through center |
-| CUP | `pp`/`qq` | Large arc around outer ring |
-| Thunder | `s`/`z` | Lightning bolt segments |
-| V-shape | `v` | Line to center, then to end |
-| L-shape | `V` | Two connected lines |
+| Type       | Symbol    | Path Description            |
+| ---------- | --------- | --------------------------- |
+| Straight   | `-`       | Line from start to end      |
+| Circle CW  | `>`       | Arc clockwise around center |
+| Circle CCW | `<`       | Arc counter-clockwise       |
+| U-shape    | `p`/`q`   | Arc through center          |
+| CUP        | `pp`/`qq` | Large arc around outer ring |
+| Thunder    | `s`/`z`   | Lightning bolt segments     |
+| V-shape    | `v`       | Line to center, then to end |
+| L-shape    | `V`       | Two connected lines         |
 
 ### Mirroring Logic
 
@@ -283,27 +296,31 @@ function mirrorPath(path: Path, startLane: number, endLane: number): Path {
 ### Adding a New Note Type
 
 1. **Update Types** (`data/chart.ts`):
+
 ```typescript
-type NoteType = 'tap' | 'hold' | 'slide' | 'newtype';
+type NoteType = "tap" | "hold" | "slide" | "newtype";
 
 interface NewTypeNote {
-  type: 'newtype';
+  type: "newtype";
   // ... properties
 }
 ```
 
 2. **Update Parser** (`data/simai.ts`):
+
 ```typescript
 const newtypeExp = /...regex pattern.../;
 // Add to parseSimaiChart switch/case
 ```
 
 3. **Update Visualization** (`data/visualization.ts`):
+
 ```typescript
 // Add conversion logic in convertChartVisualizationData
 ```
 
 4. **Create Renderer** (`view/newtype.tsx`):
+
 ```typescript
 const NewTypeView = ({ note }: { note: NewTypeNoteData }) => {
   const position = useLaneMovement(note.hitTime);
@@ -312,6 +329,7 @@ const NewTypeView = ({ note }: { note: NewTypeNoteData }) => {
 ```
 
 5. **Register in Player** (`player.tsx`):
+
 ```typescript
 // Add to the render loop
 ```
@@ -319,16 +337,19 @@ const NewTypeView = ({ note }: { note: NewTypeNoteData }) => {
 ### Adding a New Slide Type
 
 1. **Add SVG Path** (`view/slide/slide-paths.tsx`):
+
 ```typescript
 <path id="slide-newtype" d="M... C... L..." />
 ```
 
 2. **Update Slide Type Enum** (`data/chart.ts`):
+
 ```typescript
 type SlideType = ... | 'NewType';
 ```
 
 3. **Update Parser** (`data/simai.ts`):
+
 ```typescript
 // Add symbol to slideExp regex
 const slideExp = /...|newtype|.../;
@@ -336,6 +357,7 @@ const slideExp = /...|newtype|.../;
 ```
 
 4. **Update Path Resolution** (`view/slide/slide-path.hook.ts`):
+
 ```typescript
 // Add case for new type
 ```
@@ -348,7 +370,7 @@ const slideExp = /...|newtype|.../;
 
 2. **Lane Grouping**: Notes grouped by lane for batch processing
 
-3. **Pixi Optimization**: 
+3. **Pixi Optimization**:
    - Use `useTick` for animation (RAF-based)
    - Reuse graphics objects when possible
    - Avoid creating new objects in render loop
@@ -366,18 +388,19 @@ const slideExp = /...|newtype|.../;
 ### Enable Debug Mode
 
 Add to player context or use React DevTools to inspect:
+
 - Current time
 - Active notes
 - Parsed chart data
 
 ### Common Issues
 
-| Issue | Cause | Solution |
-|-------|-------|----------|
-| Notes not appearing | Timing off | Check `hitTime` calculation |
-| Slides wrong shape | Path mirroring | Verify rotation calculation |
-| Audio desync | Browser throttling | Check `useTick` behavior |
-| Lag with many notes | Too many renders | Implement culling |
+| Issue               | Cause              | Solution                    |
+| ------------------- | ------------------ | --------------------------- |
+| Notes not appearing | Timing off         | Check `hitTime` calculation |
+| Slides wrong shape  | Path mirroring     | Verify rotation calculation |
+| Audio desync        | Browser throttling | Check `useTick` behavior    |
+| Lag with many notes | Too many renders   | Implement culling           |
 
 ## Testing Changes
 

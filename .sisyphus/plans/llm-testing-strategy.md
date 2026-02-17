@@ -3,15 +3,16 @@
 ## TL;DR
 
 > **Quick Summary**: Set up bun test as a zero-config, ultra-fast (<1s) testing framework focused on parser and logic validation. Optimized for LLM agent workflows with snapshot testing, property-based edge cases, and immediate feedback via watch mode.
-> 
+>
 > **Deliverables**:
+>
 > - `bunfig.toml` - Bun test configuration
 > - `app/player/data/__tests__/` - Parser and logic test suites
 > - `package.json` scripts - Test commands with watch mode
 > - `scripts/test-watch.sh` - Convenience script for LLM agents
 > - 100+ test cases covering simai parsing edge cases
 > - Snapshot tests for parser output validation
-> 
+>
 > **Estimated Effort**: Short (2-3 hours setup, immediate value)
 > **Parallel Execution**: YES - 4 waves, max 5 parallel tasks
 > **Critical Path**: Task 1 → Task 3 → Task 5 → Task F1-F4
@@ -21,23 +22,29 @@
 ## Context
 
 ### Original Request
+
 Create an automated testing strategy tailored for the current project, extremely performant, designed for LLM agents with quick feedback loops.
 
 ### Interview Summary
+
 **User Decisions**:
+
 - **Testing Priority**: Parser + Logic ONLY (skip UI/rendering tests)
 - **Performance Target**: Ultra-Fast (< 1s total test runtime)
 - **Test Framework**: bun test (native, zero overhead)
 - **Visual Testing**: NO Playwright (trust data layer correctness)
 
 ### Research Findings
+
 **Current State**:
+
 - NO existing test infrastructure
 - Bun is package manager (bun.lockb present)
 - TypeScript project with strict compilation
 - Key risk areas: Simai parser (regex), visualization converter (timing math)
 
 **Recommended Approach**:
+
 1. bun test (zero config, native Bun runtime)
 2. Co-located tests in `__tests__/` folders
 3. Snapshot testing for parser output validation
@@ -45,7 +52,9 @@ Create an automated testing strategy tailored for the current project, extremely
 5. Watch mode for immediate LLM feedback
 
 ### Metis Review
+
 **Identified Gaps** (addressed):
+
 - **Gap**: bun test may have issues with Next.js module resolution
   - **Resolution**: Use `bun test --preload ./test-setup.ts` with proper module aliases
 - **Gap**: Need to prevent scope creep toward React Testing Library
@@ -60,9 +69,11 @@ Create an automated testing strategy tailored for the current project, extremely
 ## Work Objectives
 
 ### Core Objective
+
 Establish an ultra-fast (<1s), zero-config testing framework using bun test, focused on parser and logic validation, optimized for LLM agent workflows with immediate feedback via watch mode.
 
 ### Concrete Deliverables
+
 1. `bunfig.toml` - Bun configuration with test settings
 2. `test-setup.ts` - Test environment setup with mocks
 3. `app/player/data/__tests__/simai.test.ts` - Parser test suite (50+ cases)
@@ -73,6 +84,7 @@ Establish an ultra-fast (<1s), zero-config testing framework using bun test, foc
 8. `TESTING.md` - Quick reference guide for LLM agents
 
 ### Definition of Done
+
 - [ ] `bun test` runs in < 1 second
 - [ ] All existing code paths have representative test cases
 - [ ] Snapshot tests validate parser output stability
@@ -81,6 +93,7 @@ Establish an ultra-fast (<1s), zero-config testing framework using bun test, foc
 - [ ] Tests can run in CI without browser/DOM
 
 ### Must Have
+
 - Parser tests for ALL simai syntax patterns (tap, hold, slide, EACH, BREAK)
 - Timing conversion tests for BPM changes, divisions, edge cases
 - Snapshot tests for complex parser outputs
@@ -89,6 +102,7 @@ Establish an ultra-fast (<1s), zero-config testing framework using bun test, foc
 - Zero external test dependencies (bun test only)
 
 ### Must NOT Have (Guardrails)
+
 - React Testing Library (out of scope - UI not tested)
 - Playwright or browser-based tests (too slow)
 - DOM-dependent tests (jsdom not needed)
@@ -101,20 +115,22 @@ Establish an ultra-fast (<1s), zero-config testing framework using bun test, foc
 ## Verification Strategy
 
 ### Test Decision
+
 - **Infrastructure exists**: NO (starting from scratch)
 - **Automated tests**: YES (TDD for new code, tests-after for existing)
 - **Framework**: bun test (native Bun runner)
 - **Test approach**: Snapshot + unit tests, no integration tests
 
 ### QA Policy
+
 Every task includes agent-executed QA scenarios. Evidence saved to `.sisyphus/evidence/task-{N}-{scenario-slug}.{ext}`.
 
-| Deliverable Type | Verification Tool | Method |
-|------------------|-------------------|--------|
-| Test files | Bash (bun test) | Run test suite, assert 0 failures |
-| Test coverage | Bash (bun test --coverage) | Assert coverage reports generated |
-| Watch mode | Bash (bun test --watch) | Verify file changes trigger re-runs |
-| Snapshots | Bash (bun test --update-snapshots) | Verify snapshots can be updated |
+| Deliverable Type | Verification Tool                  | Method                              |
+| ---------------- | ---------------------------------- | ----------------------------------- |
+| Test files       | Bash (bun test)                    | Run test suite, assert 0 failures   |
+| Test coverage    | Bash (bun test --coverage)         | Assert coverage reports generated   |
+| Watch mode       | Bash (bun test --watch)            | Verify file changes trigger re-runs |
+| Snapshots        | Bash (bun test --update-snapshots) | Verify snapshots can be updated     |
 
 ---
 
@@ -150,26 +166,26 @@ Max Concurrent: 4 (Wave 1)
 
 ### Dependency Matrix
 
-| Task | Depends On | Blocks | Wave |
-|------|------------|--------|------|
-| 1 | - | 2, 3, 4 | 1 |
-| 2 | 1 | 3, 4, 5, 6 | 1 |
-| 3 | 1, 2 | 5 | 2 |
-| 4 | 1, 2 | - | 1 |
-| 5 | 2, 3 | F1-F4 | 2 |
-| 6 | 2 | F1-F4 | 2 |
-| 7 | 1 | F1-F4 | 3 |
-| 8 | 1-7 | F1-F4 | 3 |
-| F1-F4 | 1-8 | - | FINAL |
+| Task  | Depends On | Blocks     | Wave  |
+| ----- | ---------- | ---------- | ----- |
+| 1     | -          | 2, 3, 4    | 1     |
+| 2     | 1          | 3, 4, 5, 6 | 1     |
+| 3     | 1, 2       | 5          | 2     |
+| 4     | 1, 2       | -          | 1     |
+| 5     | 2, 3       | F1-F4      | 2     |
+| 6     | 2          | F1-F4      | 2     |
+| 7     | 1          | F1-F4      | 3     |
+| 8     | 1-7        | F1-F4      | 3     |
+| F1-F4 | 1-8        | -          | FINAL |
 
 ### Agent Dispatch Summary
 
-| Wave | # Parallel | Tasks → Agent Category |
-|------|------------|------------------------|
-| 1 | 4 | T1-T4 → `quick` (configuration tasks) |
-| 2 | 2 | T5-T6 → `quick` (test implementation) |
-| 3 | 2 | T7-T8 → `quick` (scripts + docs) |
-| FINAL | 4 | F1-F4 → `oracle`, `unspecified-high`, `unspecified-high`, `deep` |
+| Wave  | # Parallel | Tasks → Agent Category                                           |
+| ----- | ---------- | ---------------------------------------------------------------- |
+| 1     | 4          | T1-T4 → `quick` (configuration tasks)                            |
+| 2     | 2          | T5-T6 → `quick` (test implementation)                            |
+| 3     | 2          | T7-T8 → `quick` (scripts + docs)                                 |
+| FINAL | 4          | F1-F4 → `oracle`, `unspecified-high`, `unspecified-high`, `deep` |
 
 ---
 
@@ -692,52 +708,53 @@ Max Concurrent: 4 (Wave 1)
 > 4 review agents run in PARALLEL. ALL must APPROVE. Rejection → fix → re-run.
 
 - [ ] F1. **Plan Compliance Audit** — `oracle`
-  Read the plan end-to-end. Verify all "Must Have" items exist in code:
+      Read the plan end-to-end. Verify all "Must Have" items exist in code:
   - Parser tests for ALL note types (tap, hold, slide, EACH, BREAK)
   - Timing conversion tests with BPM changes
   - Snapshot tests present
   - Watch mode configured
   - <1s runtime verified
-  Check "Must NOT Have": No React Testing Library, no Playwright, no jsdom tests.
-  Output: `Must Have [N/N] | Must NOT Have [N/N] | VERDICT: APPROVE/REJECT`
+    Check "Must NOT Have": No React Testing Library, no Playwright, no jsdom tests.
+    Output: `Must Have [N/N] | Must NOT Have [N/N] | VERDICT: APPROVE/REJECT`
 
 - [ ] F2. **Performance Validation** — `unspecified-high`
-  Run `bun test` 10 times. Calculate average runtime. Must be < 1 second.
-  Run individual test files. Each must be < 200ms.
-  Output: `Avg Runtime: Xms | Fastest: Xms | Slowest: Xms | VERDICT`
+      Run `bun test` 10 times. Calculate average runtime. Must be < 1 second.
+      Run individual test files. Each must be < 200ms.
+      Output: `Avg Runtime: Xms | Fastest: Xms | Slowest: Xms | VERDICT`
 
 - [ ] F3. **Test Suite Completeness** — `unspecified-high`
-  Count test cases:
+      Count test cases:
   - Simai parser: target 50+, actual: ?
   - Chart types: target 20+, actual: ?
   - Visualization: target 30+, actual: ?
   - Animation: target 15+, actual: ?
-  Verify all exported functions from data layer have tests.
-  Output: `Tests [N/N targets met] | Coverage [X%] | VERDICT`
+    Verify all exported functions from data layer have tests.
+    Output: `Tests [N/N targets met] | Coverage [X%] | VERDICT`
 
 - [ ] F4. **Documentation Accuracy** — `deep`
-  Follow `TESTING.md` quick start guide exactly as written.
-  Verify all commands work.
-  Verify example test can be copy-pasted and run.
-  Check for outdated references.
-  Output: `Commands [N/N work] | Example [PASS/FAIL] | VERDICT`
+      Follow `TESTING.md` quick start guide exactly as written.
+      Verify all commands work.
+      Verify example test can be copy-pasted and run.
+      Check for outdated references.
+      Output: `Commands [N/N work] | Example [PASS/FAIL] | VERDICT`
 
 ---
 
 ## Commit Strategy
 
-| After Task | Message | Files | Verification |
-|------------|---------|-------|--------------|
-| 1-2 | `chore(test): configure bun test infrastructure` | bunfig.toml, test-setup.ts, helpers.ts | bun test --list |
-| 3-4 | `test(parser): comprehensive parser and type tests` | simai.test.ts, chart.test.ts, snapshots | bun test |
-| 5-6 | `test(logic): timing and animation test suites` | visualization.test.ts, lane.test.ts | bun test |
-| 7-8 | `chore(test): test scripts and documentation` | package.json, scripts/, TESTING.md | bun run test |
+| After Task | Message                                             | Files                                   | Verification    |
+| ---------- | --------------------------------------------------- | --------------------------------------- | --------------- |
+| 1-2        | `chore(test): configure bun test infrastructure`    | bunfig.toml, test-setup.ts, helpers.ts  | bun test --list |
+| 3-4        | `test(parser): comprehensive parser and type tests` | simai.test.ts, chart.test.ts, snapshots | bun test        |
+| 5-6        | `test(logic): timing and animation test suites`     | visualization.test.ts, lane.test.ts     | bun test        |
+| 7-8        | `chore(test): test scripts and documentation`       | package.json, scripts/, TESTING.md      | bun run test    |
 
 ---
 
 ## Success Criteria
 
 ### Verification Commands
+
 ```bash
 # All tests pass
 bun test  # Expected: All tests pass
@@ -756,6 +773,7 @@ bun run test:update  # Expected: Snapshots updated
 ```
 
 ### Final Checklist
+
 - [ ] All "Must Have" present
   - [ ] Parser tests for all note types
   - [ ] Timing conversion tests

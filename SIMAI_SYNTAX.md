@@ -154,6 +154,7 @@ BUTTONh[BEATS:COUNT],
 ```
 
 Where:
+
 - `BUTTON` - Button number (1-8)
 - `h` - HOLD indicator
 - `[BEATS:COUNT]` - Duration (e.g., `[4:1]` = 1 quarter note)
@@ -214,6 +215,7 @@ START-END[BEATS:COUNT],
 ```
 
 Where:
+
 - `START` - Starting button (1-8)
 - `-` - Slide type symbol
 - `END` - Ending button (1-8)
@@ -551,35 +553,35 @@ E
 
 ## Quick Reference Table
 
-| Symbol | Meaning | Example |
-|--------|---------|---------|
-| `,` | Note separator | `1,2,3,` |
-| `E` | End of chart | `...,E` |
-| `(BPM)` | Set BPM | `(120)` |
-| `{N}` | Note division | `{4}` |
-| `b` | BREAK modifier | `1b,` |
-| `x` | EX modifier | `1x,` |
-| `h` | HOLD indicator | `1h[4:1],` |
-| `/` | EACH separator | `1/5,` |
-| `*` | Same-origin slide | `1-5*<3` |
-| `-` | Straight slide | `1-5[4:1]` |
-| `>` | Circle clockwise | `1>5[4:1]` |
-| `<` | Circle counter-CW | `1<5[4:1]` |
-| `^` | Auto circle | `1^5[4:1]` |
-| `p` | U-shape CCW | `1p5[4:1]` |
-| `q` | U-shape CW | `1q5[4:1]` |
-| `pp` | CUP CCW | `1pp5[4:1]` |
-| `qq` | CUP CW | `1qq5[4:1]` |
-| `s` | Thunder CCW | `1s5[4:1]` |
-| `z` | Thunder CW | `1z5[4:1]` |
-| `v` | V-shape | `1v5[4:1]` |
-| `V` | L-shape | `1V35[4:1]` |
-| `[N:M]` | Duration | `[4:1]`, `[8:3]` |
-| `?` | Fade-in star | `1?-5[4:1]` |
-| `!` | No star | `1!-5[4:1]` |
-| `$` | Star TAP | `1$` |
-| `@` | No star conversion | `1@-5[4:1]` |
-| `` ` `` | Pseudo-EACH delay | ``1`2`` |
+| Symbol  | Meaning            | Example          |
+| ------- | ------------------ | ---------------- |
+| `,`     | Note separator     | `1,2,3,`         |
+| `E`     | End of chart       | `...,E`          |
+| `(BPM)` | Set BPM            | `(120)`          |
+| `{N}`   | Note division      | `{4}`            |
+| `b`     | BREAK modifier     | `1b,`            |
+| `x`     | EX modifier        | `1x,`            |
+| `h`     | HOLD indicator     | `1h[4:1],`       |
+| `/`     | EACH separator     | `1/5,`           |
+| `*`     | Same-origin slide  | `1-5*<3`         |
+| `-`     | Straight slide     | `1-5[4:1]`       |
+| `>`     | Circle clockwise   | `1>5[4:1]`       |
+| `<`     | Circle counter-CW  | `1<5[4:1]`       |
+| `^`     | Auto circle        | `1^5[4:1]`       |
+| `p`     | U-shape CCW        | `1p5[4:1]`       |
+| `q`     | U-shape CW         | `1q5[4:1]`       |
+| `pp`    | CUP CCW            | `1pp5[4:1]`      |
+| `qq`    | CUP CW             | `1qq5[4:1]`      |
+| `s`     | Thunder CCW        | `1s5[4:1]`       |
+| `z`     | Thunder CW         | `1z5[4:1]`       |
+| `v`     | V-shape            | `1v5[4:1]`       |
+| `V`     | L-shape            | `1V35[4:1]`      |
+| `[N:M]` | Duration           | `[4:1]`, `[8:3]` |
+| `?`     | Fade-in star       | `1?-5[4:1]`      |
+| `!`     | No star            | `1!-5[4:1]`      |
+| `$`     | Star TAP           | `1$`             |
+| `@`     | No star conversion | `1@-5[4:1]`      |
+| `` ` `` | Pseudo-EACH delay  | ``1`2``          |
 
 ## References
 
