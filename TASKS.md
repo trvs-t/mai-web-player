@@ -176,6 +176,9 @@ These features build on foundational work from Tier 1.
 **Description**:  
 Implement TOUCH and TOUCH HOLD notes that appear on the screen's touch sensors (not the outer ring). This expands chart support to maimai でらっくす charts.
 
+**Reference Images**:  
+- [Touch Sensor Layout](./docs/references/touch-sensors-layout.jpg) - Official maimai DX sensor layout showing A/B/C/D/E groups (34 sensors total)
+
 **Implementation Details**:
 
 - **Sensor Layout**: Implement 34 touch sensors (A1-8, B1-8, C, D1-8, E1-8)
@@ -214,6 +217,9 @@ Implement TOUCH and TOUCH HOLD notes that appear on the screen's touch sensors (
 
 **Description**:  
 Add support for WiFi slides (`w` type) - fan-shaped slides that cover 3 endpoints from a single start point. These are common in advanced charts.
+
+**Reference Images**:  
+- [Slide Patterns Table](./docs/references/slide-patterns-table.png) - Official simai wiki table showing all slide types including WiFi (扇形/w) in the bottom-left section
 
 **Implementation Details**:
 
