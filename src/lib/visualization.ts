@@ -525,3 +525,107 @@ function findLastVisibleNote(
 
   return result;
 }
+
+export interface NoteCounts {
+  tap: number;
+  hold: number;
+  slide: number;
+  touch: number;
+  touchHold: number;
+  total: number;
+}
+
+export interface DensityPoint {
+  time: number;
+  notesPerSecond: number;
+}
+
+export interface BPMChange {
+  time: number;
+  bpm: number;
+}
+
+export interface ChartStatistics {
+  noteCounts: NoteCounts;
+  totalDuration: number;
+  densityData: DensityPoint[];
+  bpmChanges: BPMChange[];
+  peakDensity: {
+    time: number;
+    value: number;
+  };
+  estimatedDifficulty: number;
+}
+
+export function calculateChartStatistics(
+  notes: NoteVisualization[],
+  totalDuration: number,
+): ChartStatistics {
+  const noteCounts: NoteCounts = {
+    tap: 0,
+    hold: 0,
+    slide: 0,
+    touch: 0,
+    touchHold: 0,
+    total: notes.length,
+  };
+
+  for (const note of notes) {
+    switch (note.type) {
+      case "tap":
+        noteCounts.tap++;
+        break;
+      case "hold":
+        noteCounts.hold++;
+        break;
+      case "slide":
+        noteCounts.slide++;
+        break;
+      case "touch":
+        noteCounts.touch++;
+        break;
+      case "touchHold":
+        noteCounts.touchHold++;
+        break;
+    }
+  }
+
+  const windowSize = 2000;
+  const step = 500;
+  const densityData: DensityPoint[] = [];
+  let peakDensity = { time: 0, value: 0 };
+
+  for (let time = 0; time < totalDuration; time += step) {
+    const windowStart = time;
+    const windowEnd = time + windowSize;
+    const notesInWindow = notes.filter((n) => {
+      const hitTime = getNoteStartTime(n);
+      return hitTime >= windowStart && hitTime < windowEnd;
+    }).length;
+    const notesPerSecond = (notesInWindow / windowSize) * 1000;
+
+    densityData.push({ time, notesPerSecond });
+
+    if (notesPerSecond > peakDensity.value) {
+      peakDensity = { time, value: notesPerSecond };
+    }
+  }
+
+  const avgDensity = densityData.length > 0
+    ? densityData.reduce((sum, d) => sum + d.notesPerSecond, 0) / densityData.length
+    : 0;
+  const maxDensity = peakDensity.value;
+  const noteCountFactor = Math.log10(noteCounts.total + 1) * 2;
+  const estimatedDifficulty = Math.min(15, Math.round(
+    (avgDensity * 0.5 + maxDensity * 0.3 + noteCountFactor * 0.2) / 2
+  ));
+
+  return {
+    noteCounts,
+    totalDuration,
+    densityData,
+    bpmChanges: [],
+    peakDensity,
+    estimatedDifficulty,
+  };
+}

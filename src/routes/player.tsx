@@ -16,6 +16,7 @@ import {
   TimerContext,
 } from "../contexts/timer";
 import { MetadataPanel } from "../components/metadata-panel";
+import { StatisticsPanel } from "../components/statistics-panel";
 import { TimerControls } from "../components/controls";
 import { Chart } from "../lib/chart";
 import { parseSimai, SimaiParseError } from "../lib/simai";
@@ -210,6 +211,7 @@ function PlayerPage() {
             />
           </div>
           <MetadataPanel metadata={chart?.metadata ?? {}} />
+          <StatisticsPanel chart={chart} />
           <div className="border-t pt-4">
             <label className="block text-sm font-medium mb-2">
               Chart Import/Export
