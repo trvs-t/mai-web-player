@@ -324,7 +324,7 @@ const timeSignatureExp = /^(?:\((\d+\.?\d+)\))?(?:\{(\d+)\})?(.*)$/;
 const touchExp =
   /^(?<zone>[A-E])(?<position>[1-8])?(?<hold>h)?(?<hanabi>f)?(?<duration>\[(?<bpm>\d+(?:#))?(?<division>\d+):(?<count>\d+)\])?$/;
 const noteExp =
-  /^(?<lane>[1-8])(?<modifiers>[bx]*)(?:(?<hold>h.*)|(?<slide>(?:[-<>pqszvwV^]|pp|qq).*))?$/;
+  /^(?<lane>[1-8])(?<modifiers>[bx]*)(?<visibility>[?!]?)(?:(?<hold>h.*)|(?<slide>(?:[-<>pqszvwV^]|pp|qq).*))?$/;
 const holdExp =
   /^h(?<duration>\[(?:(?<bpm>\d+)#)?(?<division>\d+):(?<count>\d+)\])?$/;
 const slideExp =
@@ -419,7 +419,8 @@ function parseSimaiNote(str: string): Chart["items"] {
 
     const noteMatch = part.match(noteExp);
     if (noteMatch?.groups) {
-      const { lane, hold, slide } = noteMatch.groups;
+      const { lane, hold, slide, visibility } = noteMatch.groups;
+      const starVisibility = visibility === "?" ? "fadeIn" : visibility === "!" ? "hidden" : "normal";
       if (hold) {
         const { duration, bpm, division, count } =
           hold.match(holdExp)?.groups ?? {};
@@ -470,6 +471,7 @@ function parseSimaiNote(str: string): Chart["items"] {
               convertedType,
               direction,
               +dest,
+              starVisibility,
             ),
           );
         }
@@ -620,7 +622,8 @@ function parseSimaiNoteWithErrors(
 
     const noteMatch = part.match(noteExp);
     if (noteMatch?.groups) {
-      const { lane, hold, slide } = noteMatch.groups;
+      const { lane, hold, slide, visibility } = noteMatch.groups;
+      const starVisibility = visibility === "?" ? "fadeIn" : visibility === "!" ? "hidden" : "normal";
       const laneNum = parseInt(lane, 10);
 
       if (isNaN(laneNum) || laneNum < 1 || laneNum > 8) {
@@ -845,23 +848,13 @@ function parseSimaiNoteWithErrors(
               convertedType,
               direction,
               destNum,
+              starVisibility,
             ),
           );
         }
       } else {
         parsedBody.push(tapItem(laneNum));
       }
-    } else if (part.trim()) {
-      // Unrecognized note syntax
-      errors.push(
-        new SimaiParseError(
-          `Unrecognized note syntax: "${part.substring(0, 30)}"`,
-          undefined,
-          undefined,
-          "error",
-          "Valid notes: 1-8 (tap), 1h[4:1] (hold), 1-5[4:1] (slide), 1/5 (EACH)",
-        ),
-      );
     }
   }
 

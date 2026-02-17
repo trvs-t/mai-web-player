@@ -25,6 +25,8 @@ export type SlideType =
   | "Straight"
   | "WiFi";
 
+export type StarVisibility = "normal" | "fadeIn" | "hidden";
+
 export interface SlideChartData {
   type: "slide";
   duration: DurationInBpm;
@@ -32,6 +34,7 @@ export interface SlideChartData {
   slideType: SlideType;
   direction: "cw" | "ccw";
   destinationLane: number;
+  starVisibility: StarVisibility;
 }
 
 export type TouchZone = "A" | "B" | "C" | "D" | "E";
@@ -129,6 +132,7 @@ export function slideItem(
   slideType: SlideType,
   direction: "cw" | "ccw",
   destinationLane: number,
+  starVisibility: StarVisibility = "normal",
 ) {
   return {
     type: "note" as const,
@@ -139,6 +143,7 @@ export function slideItem(
       slideType,
       direction,
       destinationLane,
+      starVisibility,
     } as SlideChartData,
   };
 }
