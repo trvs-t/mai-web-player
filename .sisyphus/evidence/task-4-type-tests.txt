@@ -1,0 +1,16 @@
+bun test v1.3.10-canary.47 (70b354aa)
+
+app/player/data/__tests__/chart.test.ts:
+✓ Test setup complete - PixiJS mocked and path aliases configured
+--------------------------|---------|---------|-------------------
+File                      | % Funcs | % Lines | Uncovered Line #s
+--------------------------|---------|---------|-------------------
+All files                 |   51.85 |   88.27 |
+ app/player/data/chart.ts |  100.00 |  100.00 | 
+ test-setup.ts            |    3.70 |   76.54 | 37,40,43,46,49,52,55,58,61,64,67,70,73,76,79,94-95,130-142,258,261,264,267,270,273-277,280-282,292-302,307-313
+--------------------------|---------|---------|-------------------
+
+ 53 pass
+ 0 fail
+ 112 expect() calls
+Ran 53 tests across 1 file. [12.00ms]

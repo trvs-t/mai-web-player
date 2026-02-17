@@ -1,0 +1,53 @@
+Task 2 Evidence: Test Utilities and Fixtures
+=============================================
+
+Date: 2026-02-17
+
+Files Created:
+- app/player/data/__tests__/helpers.ts (3,012 bytes)
+- app/player/data/__tests__/fixtures.ts (5,397 bytes)
+
+Test Results:
+- 19 tests passed
+- 0 tests failed
+- 31 expect() calls
+
+Helper Functions (10 total):
+1. createChartInput(simai: string): string - Wraps raw simai with E marker
+2. expectValidChart(result): boolean - Validates chart structure
+3. isNoteItem(item): type guard - Checks if item is a note
+4. expectNoteType(item, type): boolean - Validates note type
+5. expectLane(item, lane): boolean - Validates lane number
+6. snapshotPath(testName): string - Generates snapshot identifiers
+7. extractNotes(result): Array - Extracts all notes from result
+8. countNotes(result): number - Counts total notes
+9. findFirstNote(result): Note | undefined - Finds first note (handles EACH)
+10. findFirstNoteOfType(result, type): Note | undefined - Finds first note by type
+11. expectValidMetadata(chart): boolean - Validates chart metadata
+
+Test Fixtures (24 total):
+- SIMPLE_TAP: "(120){4}1,E"
+- SIMPLE_HOLD: "(120){4}1h[4:1],E"
+- SIMPLE_SLIDE: "(120){4}1-5[4:1],E"
+- EACH_TAP: "(120){4}1/5,E"
+- BREAK_TAP: "(120){4}1b,E"
+- BPM_CHANGE: "(120){4}1,(140){4}2,E"
+- CIRCLE_SLIDE_CW: "(120){4}1>3[4:1],E"
+- CIRCLE_SLIDE_CCW: "(120){4}1<7[4:1],E"
+- U_SLIDE_CW: "(120){4}1q5[4:1],E"
+- U_SLIDE_CCW: "(120){4}1p5[4:1],E"
+- CUP_SLIDE_CW: "(120){4}1qq5[4:1],E"
+- CUP_SLIDE_CCW: "(120){4}1pp5[4:1],E"
+- THUNDER_SLIDE_CW: "(120){4}1z5[4:1],E"
+- THUNDER_SLIDE_CCW: "(120){4}1s5[4:1],E"
+- V_SLIDE: "(120){4}1v5[4:1],E"
+- L_SLIDE: "(120){4}1V235[4:1],E"
+- AUTO_CIRCLE_SLIDE: "(120){4}1^5[4:1],E"
+- SAME_ORIGIN_SLIDES: "(120){4}1-5[4:1]*1>3[4:1],E"
+- COMPLEX_CHART: Multi-line chart with various note types
+- EIGHTH_NOTE_CHART: "(120){8}1,2,3,4,E"
+- FRACTIONAL_BPM_CHART: "(128.5){4}1,2,E"
+- WITH_RESTS: "(120){4}1,,2,,3,E"
+- FULL_CHART_EXAMPLE: Complete chart example
+
+All fixtures parsed successfully without errors.
