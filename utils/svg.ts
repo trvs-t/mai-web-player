@@ -6,7 +6,7 @@ export type AngledPoint = {
 
 export function splitPath(
   path: SVGPathElement,
-  segmentLength: number
+  segmentLength: number,
 ): { id: number; point: [number, number]; angle: number }[] {
   const pathLength = path.getTotalLength();
 
@@ -21,7 +21,7 @@ export function splitPath(
     const angle =
       Math.atan2(
         nextPoint[1] - currentPoint[1],
-        nextPoint[0] - currentPoint[0]
+        nextPoint[0] - currentPoint[0],
       ) +
       (Math.PI / 2) * 3;
     return {
