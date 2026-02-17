@@ -16,7 +16,7 @@ These tasks provide core infrastructure needed by other features.
 
 ### 1. Audio-Less Chart Playback Mode
 **Priority**: 🔴 Critical  
-**Status**: ⏳ Not Started  
+**Status**: ✅ Complete  
 **Dependencies**: None  
 **Estimated Effort**: Medium
 
@@ -31,16 +31,18 @@ Enable chart visualization without requiring an audio file. This is essential fo
 - Show a metronome beat indicator when in audio-less mode
 
 **Acceptance Criteria**:
-- [ ] Player works without audio file upload
-- [ ] Playback controls (play/pause/seek) function normally
-- [ ] Visual metronome shows beat numbers
-- [ ] Speed control affects both visual and timing
-- [ ] Mode can be toggled mid-session
+- [x] Player works without audio file upload
+- [x] Playback controls (play/pause/seek) function normally
+- [x] Visual metronome shows beat numbers
+- [x] Speed control affects both visual and timing
+- [x] Mode can be toggled mid-session
 
-**Files to Modify**:
-- `app/player/context/audio.tsx` - Add mode toggle
-- `app/player/context/timer.tsx` - Add free-run timer logic
-- `app/player/controls.tsx` - Add mode toggle UI and speed control
+**Files Modified**:
+- `app/player/context/audio.tsx` - Add FreeRunTimerProvider with requestAnimationFrame
+- `app/player/context/timer.tsx` - Add TimerMode and PlaybackSpeed types
+- `app/player/controls.tsx` - Add mode toggle and speed control UI
+- `app/player/page.tsx` - Integrate both timer providers
+- `app/player/view/metronome.tsx` - Create metronome component
 
 ---
 
@@ -378,6 +380,44 @@ Implement object pooling for Pixi sprites/graphics to reduce GC pressure and imp
 **Status**: ⏳ Not Started  
 **Dependencies**: Task #2 (Metadata Support)  
 **Estimated Effort**: Low
+
+---
+
+### 13. Dependency Upgrade
+**Priority**: 🟠 High  
+**Status**: ⏳ Not Started  
+**Dependencies**: None  
+**Estimated Effort**: Medium
+
+**Description**:  
+Upgrade all project dependencies to their latest stable versions to ensure security patches, bug fixes, and access to new features. This includes React, Next.js, Pixi.js, Howler, and all dev dependencies.
+
+**Implementation Details**:
+- Run `npm outdated` to identify outdated packages
+- Update `package.json` with latest compatible versions
+- Address breaking changes in major version updates
+- Test all core functionality after upgrades:
+  - Chart parsing and rendering
+  - Audio playback with Howler
+  - Pixi.js graphics rendering
+  - UI interactions and state management
+- Update TypeScript types if needed
+- Verify build process still works
+
+**Acceptance Criteria**:
+- [ ] All dependencies updated to latest stable versions
+- [ ] No security vulnerabilities (`npm audit` passes)
+- [ ] Application builds successfully
+- [ ] All core features work correctly (playback, rendering, parsing)
+- [ ] No TypeScript errors or warnings
+- [ ] No console warnings or errors
+
+**Files to Modify**:
+- `package.json` - Update dependency versions
+- `package-lock.json` - Regenerated after update
+- Address any breaking changes in source files as needed
+
+---
 
 **Description**:  
 Display chart statistics: note counts, density graphs, difficulty estimation. Useful for charters to analyze their charts.
