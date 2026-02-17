@@ -1,5 +1,4 @@
-import { createRoute, createFileRoute } from "@tanstack/react-router";
-import { Route as rootRoute } from "./__root";
+import { createFileRoute } from "@tanstack/react-router";
 
 function HomePage() {
   return (
@@ -19,8 +18,6 @@ function HomePage() {
   );
 }
 
-export const Route = createRoute("/")({
-  getParentRoute: () => rootRoute,
-  path: "/",
+export const Route = createFileRoute("/")({
   component: HomePage,
 });

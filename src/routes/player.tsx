@@ -23,6 +23,7 @@ import { parseSimai, SimaiParseError } from "../lib/simai";
 import { Player } from "../components/player";
 import { Metronome } from "../components/view/metronome";
 import { SlidePaths } from "../components/view/slide/slide-paths";
+import { convertChartWithMeasures, MeasureInfo } from "../lib/visualization";
 
 function TimerProviderSelector({
   children,
@@ -100,6 +101,11 @@ function PlayerPage() {
     return result;
   }, [simai]);
 
+  const measureData = useMemo(() => {
+    if (!chart) return null;
+    return convertChartWithMeasures(chart);
+  }, [chart]);
+
   return (
     <div className="p-4">
       <h1 className="text-2xl font-bold mb-4">Maimai Player</h1>
@@ -124,7 +130,7 @@ function PlayerPage() {
                     <Player />
                   </TimerProviderSelector>
                 </BridgedStage>
-                <TimerControls />
+                <TimerControls measures={measureData?.measures} />
                 <MetronomeWrapper chart={chart} />
               </TimerProvider>
             </ChartContext.Provider>
@@ -192,8 +198,6 @@ function PlayerPage() {
   );
 }
 
-export const Route = createRoute("/player")({
-  getParentRoute: () => rootRoute,
-  path: "/player",
+export const Route = createFileRoute("/player")({
   component: PlayerPage,
 });
