@@ -18,7 +18,7 @@ import {
 import { MetadataPanel } from "./components/metadata-panel";
 import { TimerControls } from "./controls";
 import { Chart } from "./data/chart";
-import { parseSimai } from "./data/simai";
+import { parseSimai, SimaiParseError } from "./data/simai";
 import { Player } from "./player";
 import { Metronome } from "./view/metronome";
 import { SlidePaths } from "./view/slide/slide-paths";
@@ -88,10 +88,16 @@ const Page = () => {
   const [audioOffset, setAudioOffset] = useState(0);
 
   const [simai, setSimai] = useState<string>("");
-  const chart: Chart | null = useMemo(
-    () => (simai.length ? parseSimai(simai) : null),
-    [simai]
-  );
+  const [parseErrors, setParseErrors] = useState<SimaiParseError[]>([]);
+  const chart: Chart | null = useMemo(() => {
+    if (!simai.length) {
+      setParseErrors([]);
+      return null;
+    }
+    const result = parseSimai(simai);
+    setParseErrors(result.errors);
+    return result;
+  }, [simai]);
 
   return (
     <div className="p-4">
@@ -143,6 +149,35 @@ const Page = () => {
           <label className="block text-sm font-medium mb-2">
             Simai Chart Editor
           </label>
+          {parseErrors.length > 0 && (
+            <div className="mb-4 space-y-2">
+              {parseErrors.map((error, index) => (
+                <div
+                  key={index}
+                  className={`p-3 rounded text-sm border ${
+                    error.severity === "error"
+                      ? "bg-red-50 border-red-200 text-red-800"
+                      : "bg-yellow-50 border-yellow-200 text-yellow-800"
+                  }`}
+                >
+                  <div className="flex items-start gap-2">
+                    <span className="font-bold shrink-0">
+                      {error.severity === "error" ? "Error" : "Warning"}
+                      {error.line && ` (Line ${error.line}`}
+                      {error.column && `, Col ${error.column}`}
+                      {error.line && ")"}:
+                    </span>
+                    <span>{error.message}</span>
+                  </div>
+                  {error.suggestion && (
+                    <div className="mt-1 text-sm opacity-80">
+                      Suggestion: {error.suggestion}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
           <textarea
             value={simai}
             onChange={(e) => setSimai(e.target.value)}
