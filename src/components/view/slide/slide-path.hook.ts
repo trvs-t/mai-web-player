@@ -114,4 +114,17 @@ const pathData = {
       "Straight_x5F_7",
     ],
   },
+  WiFi: {
+    diffIndexOffset: 0,
+    paths: [
+      "WiFi_x5F_1",
+      "WiFi_x5F_2",
+      "WiFi_x5F_3",
+      "WiFi_x5F_4",
+      "WiFi_x5F_5",
+      "WiFi_x5F_6",
+      "WiFi_x5F_7",
+      "WiFi_x5F_8",
+    ],
+  },
 };

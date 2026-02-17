@@ -22,7 +22,8 @@ export type SlideType =
   | "L"
   | "Thunder"
   | "V"
-  | "Straight";
+  | "Straight"
+  | "WiFi";
 
 export interface SlideChartData {
   type: "slide";

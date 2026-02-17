@@ -211,6 +211,38 @@ viewBox="0 0 1080 1080" style="enable-background:new 0 0 1080 1080;" xml:space="
 viewBox="0 0 1080 1080" style="enable-background:new 0 0 1080 1080;" xml:space="preserve">
 <polyline id="V_x5F_8_1_" style="fill:none;stroke:#000000;stroke-miterlimit:10;" points="723.733,96.43 540,540 356.267,96.43 "/>
 </svg>
+<svg version="1.1" id="WiFi" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+viewBox="0 0 1080 1080" style="enable-background:new 0 0 1080 1080;" xml:space="preserve">
+<path id="WiFi_x5F_1" style="fill:none;stroke:#000000;stroke-miterlimit:10;" d="M723.733,96.43 L356.267,983.57 L983.57,723.733"/>
+</svg>
+<svg version="1.1" id="WiFi" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+viewBox="0 0 1080 1080" style="enable-background:new 0 0 1080 1080;" xml:space="preserve">
+<path id="WiFi_x5F_2" style="fill:none;stroke:#000000;stroke-miterlimit:10;" d="M723.733,96.43 L96.43,723.733 L983.57,983.57"/>
+</svg>
+<svg version="1.1" id="WiFi" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+viewBox="0 0 1080 1080" style="enable-background:new 0 0 1080 1080;" xml:space="preserve">
+<path id="WiFi_x5F_3" style="fill:none;stroke:#000000;stroke-miterlimit:10;" d="M723.733,96.43 L96.43,356.267 L356.267,983.57"/>
+</svg>
+<svg version="1.1" id="WiFi" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+viewBox="0 0 1080 1080" style="enable-background:new 0 0 1080 1080;" xml:space="preserve">
+<path id="WiFi_x5F_4" style="fill:none;stroke:#000000;stroke-miterlimit:10;" d="M723.733,96.43 L356.267,96.43 L96.43,356.267"/>
+</svg>
+<svg version="1.1" id="WiFi" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+viewBox="0 0 1080 1080" style="enable-background:new 0 0 1080 1080;" xml:space="preserve">
+<path id="WiFi_x5F_5" style="fill:none;stroke:#000000;stroke-miterlimit:10;" d="M723.733,96.43 L983.57,356.267 L356.267,96.43"/>
+</svg>
+<svg version="1.1" id="WiFi" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+viewBox="0 0 1080 1080" style="enable-background:new 0 0 1080 1080;" xml:space="preserve">
+<path id="WiFi_x5F_6" style="fill:none;stroke:#000000;stroke-miterlimit:10;" d="M723.733,96.43 L983.57,983.57 L983.57,356.267"/>
+</svg>
+<svg version="1.1" id="WiFi" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+viewBox="0 0 1080 1080" style="enable-background:new 0 0 1080 1080;" xml:space="preserve">
+<path id="WiFi_x5F_7" style="fill:none;stroke:#000000;stroke-miterlimit:10;" d="M723.733,96.43 L983.57,723.733 L983.57,983.57"/>
+</svg>
+<svg version="1.1" id="WiFi" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+viewBox="0 0 1080 1080" style="enable-background:new 0 0 1080 1080;" xml:space="preserve">
+<path id="WiFi_x5F_8" style="fill:none;stroke:#000000;stroke-miterlimit:10;" d="M723.733,96.43 L356.267,983.57 L983.57,723.733"/>
+</svg>
 `;
 
 export const SlidePaths = memo(function SlidePaths() {

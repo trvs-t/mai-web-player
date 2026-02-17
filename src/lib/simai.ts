@@ -355,8 +355,7 @@ function convertSlideType(data: {
     case "v":
       return { type: "V", direction: "ccw" };
     case "w":
-      // TODO wifi slide lmao
-      return { type: "Straight", direction: "ccw" };
+      return { type: "WiFi", direction: "ccw" };
     case "V":
       if (!mid) return;
       const midDistance = mid - lane + (mid < lane ? 8 : 0);
