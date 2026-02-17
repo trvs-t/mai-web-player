@@ -2,36 +2,45 @@
   "name": "mai-web-charter",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "next dev --turbo --port=3001",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
+    "dev": "vite --port=3001",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
     "test": "bun test",
     "test:watch": "bun test --watch",
     "test:coverage": "bun test --coverage",
-    "test:update": "bun test --update-snapshots"
+    "test:update": "bun test --update-snapshots",
+    "lint": "oxlint .",
+    "lint:fix": "oxlint . --fix",
+    "format": "oxfmt .",
+    "format:check": "oxfmt . --check",
+    "check": "tsc && oxlint . && oxfmt . --check"
   },
   "dependencies": {
     "@pixi/react": "^7.0.3",
+    "@tanstack/react-router": "^1.160.2",
+    "@tanstack/router-devtools": "^1.160.2",
+    "@types/howler": "^2.2.7",
     "@types/node": "18.15.13",
     "@types/react": "18.0.37",
     "@types/react-dom": "18.0.11",
-    "autoprefixer": "10.4.14",
-    "eslint": "8.38.0",
-    "eslint-config-next": "13.3.0",
     "howler": "^2.2.3",
-    "next": "13.3.0",
     "pixi.js": "^7.2.4",
-    "postcss": "8.4.23",
     "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "tailwindcss": "3.3.1",
-    "typescript": "5.0.4"
+    "react-dom": "18.2.0"
   },
   "devDependencies": {
-    "@types/howler": "^2.2.7",
-    "bun-types": "latest"
+    "@tanstack/router-plugin": "^1.160.2",
+    "@vitejs/plugin-react": "^5.1.4",
+    "autoprefixer": "10.4.14",
+    "bun-types": "latest",
+    "oxfmt": "^0.33.0",
+    "oxlint": "^1.48.0",
+    "postcss": "8.4.23",
+    "tailwindcss": "3.3.1",
+    "typescript": "5.0.4",
+    "vite": "^7.3.1"
   },
   "packageManager": "pnpm@10.13.1+sha512.37ebf1a5c7a30d5fabe0c5df44ee8da4c965ca0c5af3dbab28c3a1681b70a256218d05c81c9c0dcf767ef6b8551eb5b960042b9ed4300c59242336377e01cfad"
 }
