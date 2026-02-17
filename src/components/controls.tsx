@@ -1,15 +1,19 @@
 import { useContext, useEffect, useState } from "react";
-import { AudioContext, FreeRunChartContext } from "../contexts/audio";
+import { AudioContext } from "../contexts/audio";
 import {
   PlaybackSpeed,
   TimeControlContext,
   TimerConfigControlContext,
   TimerConfigContext,
   TimerContext,
-  TimerMode,
 } from "../contexts/timer";
+import { MeasureInfo, getMeasureDisplay } from "../lib/visualization";
 
-export function TimerControls() {
+interface TimerControlsProps {
+  measures?: MeasureInfo[];
+}
+
+export function TimerControls({ measures }: TimerControlsProps) {
   const audio = useContext(AudioContext);
   const music = audio?.music;
   const timer = useContext(TimerContext);
@@ -80,10 +84,17 @@ export function TimerControls() {
 
   const speeds: PlaybackSpeed[] = [0.25, 0.5, 1, 2];
 
+  const measureDisplay = measures
+    ? getMeasureDisplay(measures, timer.time)
+    : "M-- B-";
+
   return (
     <div className="space-y-4 p-4 border rounded">
       <div className="flex items-center justify-between">
         <span className="text-lg font-mono">{formatTime(timer.time)}</span>
+        <span className="text-sm font-mono text-blue-600 font-semibold">
+          {measureDisplay}
+        </span>
         <span
           className={`px-2 py-1 rounded text-sm ${isPlaying ? "bg-green-500 text-white" : "bg-gray-300"}`}
         >

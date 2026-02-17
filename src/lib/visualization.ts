@@ -1,5 +1,19 @@
 import { Chart, SlideType } from "./chart";
 
+export interface MeasureInfo {
+  measureNumber: number;
+  startTime: number;
+  endTime: number;
+  division: number;
+  bpm: number;
+}
+
+export interface ChartWithMeasures {
+  notes: NoteVisualization[];
+  measures: MeasureInfo[];
+  totalDuration: number;
+}
+
 export interface SlideVisualizationData {
   lane: number;
   hitTime: number;
@@ -140,4 +154,185 @@ export function convertChartVisualizationData(chart: Chart) {
   }
 
   return notes;
+}
+
+export function convertChartWithMeasures(chart: Chart): ChartWithMeasures {
+  let time = 0;
+  const baseTimeSignature = chart.items[0];
+  let currentBpm: number;
+  let currentDivision: number;
+  let measureStartTime = 0;
+  let currentMeasureNumber = 1;
+  let beatsInCurrentMeasure = 0;
+
+  if (
+    Array.isArray(baseTimeSignature) ||
+    baseTimeSignature.type !== "timeSignature"
+  ) {
+    if (chart.metadata.bpm) {
+      currentBpm = chart.metadata.bpm;
+      currentDivision = 4;
+    } else {
+      throw new Error("Invalid chart");
+    }
+  } else {
+    currentBpm = baseTimeSignature.data.bpm ?? chart.metadata.bpm ?? 120;
+    currentDivision = baseTimeSignature.data.division;
+  }
+
+  const notes: NoteVisualization[] = [];
+  const measures: MeasureInfo[] = [];
+
+  function completeMeasure() {
+    if (beatsInCurrentMeasure > 0) {
+      measures.push({
+        measureNumber: currentMeasureNumber,
+        startTime: measureStartTime,
+        endTime: time,
+        division: currentDivision,
+        bpm: currentBpm,
+      });
+      currentMeasureNumber++;
+      measureStartTime = time;
+      beatsInCurrentMeasure = 0;
+    }
+  }
+
+  for (const item of chart.items.slice(1)) {
+    const beatDuration = (60000 / currentBpm / currentDivision) * 4;
+
+    // time signature and rest should not be array
+    if (!Array.isArray(item)) {
+      const { type, data } = item;
+      switch (type) {
+        case "timeSignature": {
+          // Complete current measure before changing time signature
+          completeMeasure();
+          currentBpm = data.bpm ?? currentBpm;
+          currentDivision = data.division;
+          continue;
+        }
+        case "rest": {
+          const restBeats = data.divisionCount;
+          let remainingRestBeats = restBeats;
+          while (remainingRestBeats > 0) {
+            const beatsToCompleteMeasure = currentDivision - beatsInCurrentMeasure;
+            const beatsToUse = Math.min(remainingRestBeats, beatsToCompleteMeasure);
+            
+            time += beatsToUse * beatDuration;
+            beatsInCurrentMeasure += beatsToUse;
+            remainingRestBeats -= beatsToUse;
+            
+            if (beatsInCurrentMeasure >= currentDivision) {
+              completeMeasure();
+            }
+          }
+          continue;
+        }
+      }
+    }
+
+    // Check if we need to complete the measure before adding this note
+    if (beatsInCurrentMeasure >= currentDivision) {
+      completeMeasure();
+    }
+
+    // handle notes only
+    const itemList = Array.isArray(item) ? item : [item];
+    const isEach = itemList.length > 1;
+    itemList.forEach((item) => {
+      const { data } = item;
+      switch (data.type) {
+        case "tap":
+          notes.push({
+            type: "tap",
+            data: {
+              lane: data.lane,
+              hitTime: time,
+              isEach,
+            },
+          });
+          break;
+        case "hold":
+          notes.push({
+            type: "hold",
+            data: {
+              lane: data.lane,
+              hitTime: time,
+              duration:
+                data.duration.divisionCount *
+                ((60000 /
+                  (data.duration.bpm ?? currentBpm) /
+                  data.duration.division) *
+                  4),
+              isEach,
+            },
+          });
+          break;
+        case "slide":
+          notes.push({
+            type: "slide",
+            data: {
+              lane: data.lane,
+              hitTime: time,
+              startTime:
+                time + (60000 / (data.duration.bpm ?? currentBpm) / 4) * 4,
+              duration:
+                data.duration.divisionCount *
+                ((60000 /
+                  (data.duration.bpm ?? currentBpm) /
+                  data.duration.division) *
+                  4),
+              slideType: data.slideType,
+              direction: data.direction,
+              destinationLane: data.destinationLane,
+              isEach,
+            },
+          });
+          break;
+      }
+    });
+
+    time += beatDuration;
+    beatsInCurrentMeasure++;
+
+    // Complete measure if full
+    if (beatsInCurrentMeasure >= currentDivision) {
+      completeMeasure();
+    }
+  }
+
+  // Complete any remaining partial measure
+  completeMeasure();
+
+  return {
+    notes,
+    measures,
+    totalDuration: time,
+  };
+}
+
+export function getCurrentMeasure(
+  measures: MeasureInfo[],
+  currentTime: number,
+): MeasureInfo | null {
+  return (
+    measures.find(
+      (m) => currentTime >= m.startTime && currentTime < m.endTime,
+    ) || null
+  );
+}
+
+export function getMeasureDisplay(
+  measures: MeasureInfo[],
+  currentTime: number,
+): string {
+  const measure = getCurrentMeasure(measures, currentTime);
+  if (!measure) return "M-- B-";
+
+  const beatDuration = (60000 / measure.bpm / measure.division) * 4;
+  const beatInMeasure = Math.floor(
+    (currentTime - measure.startTime) / beatDuration,
+  );
+  return `M${measure.measureNumber} B${beatInMeasure + 1}`;
 }
