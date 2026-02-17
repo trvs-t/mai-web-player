@@ -1,4 +1,4 @@
-import { Chart, SlideType } from "./chart";
+import { Chart, SlideType, TouchZone } from "./chart";
 
 export interface MeasureInfo {
   measureNumber: number;
@@ -38,10 +38,29 @@ export interface TapVisualizeData {
   isEach?: boolean;
 }
 
+export interface TouchVisualizeData {
+  zone: TouchZone;
+  position: number;
+  hitTime: number;
+  isHanabi: boolean;
+  isEach?: boolean;
+}
+
+export interface TouchHoldVisualizeData {
+  zone: TouchZone;
+  position: number;
+  hitTime: number;
+  duration: number;
+  isHanabi: boolean;
+  isEach?: boolean;
+}
+
 export type NoteVisualizationData =
   | TapVisualizeData
   | HoldVisualizeData
-  | SlideVisualizationData;
+  | SlideVisualizationData
+  | TouchVisualizeData
+  | TouchHoldVisualizeData;
 
 export type NoteVisualization =
   | {
@@ -55,6 +74,14 @@ export type NoteVisualization =
   | {
       type: "slide";
       data: SlideVisualizationData;
+    }
+  | {
+      type: "touch";
+      data: TouchVisualizeData;
+    }
+  | {
+      type: "touchHold";
+      data: TouchHoldVisualizeData;
     };
 
 export function convertChartVisualizationData(chart: Chart) {
@@ -144,6 +171,36 @@ export function convertChartVisualizationData(chart: Chart) {
               slideType: data.slideType,
               direction: data.direction,
               destinationLane: data.destinationLane,
+              isEach,
+            },
+          });
+          break;
+        case "touch":
+          notes.push({
+            type: "touch",
+            data: {
+              zone: data.zone,
+              position: data.position,
+              hitTime: time,
+              isHanabi: data.isHanabi,
+              isEach,
+            },
+          });
+          break;
+        case "touchHold":
+          notes.push({
+            type: "touchHold",
+            data: {
+              zone: data.zone,
+              position: data.position,
+              hitTime: time,
+              duration:
+                data.duration.divisionCount *
+                ((60000 /
+                  (data.duration.bpm ?? currentBpm) /
+                  data.duration.division) *
+                  4),
+              isHanabi: data.isHanabi,
               isEach,
             },
           });
@@ -286,6 +343,36 @@ export function convertChartWithMeasures(chart: Chart): ChartWithMeasures {
               slideType: data.slideType,
               direction: data.direction,
               destinationLane: data.destinationLane,
+              isEach,
+            },
+          });
+          break;
+        case "touch":
+          notes.push({
+            type: "touch",
+            data: {
+              zone: data.zone,
+              position: data.position,
+              hitTime: time,
+              isHanabi: data.isHanabi,
+              isEach,
+            },
+          });
+          break;
+        case "touchHold":
+          notes.push({
+            type: "touchHold",
+            data: {
+              zone: data.zone,
+              position: data.position,
+              hitTime: time,
+              duration:
+                data.duration.divisionCount *
+                ((60000 /
+                  (data.duration.bpm ?? currentBpm) /
+                  data.duration.division) *
+                  4),
+              isHanabi: data.isHanabi,
               isEach,
             },
           });
