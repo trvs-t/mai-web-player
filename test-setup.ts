@@ -107,15 +107,27 @@ class MockBaseTexture {
 }
 
 class MockRectangle {
-  constructor(public x = 0, public y = 0, public width = 0, public height = 0) {}
+  constructor(
+    public x = 0,
+    public y = 0,
+    public width = 0,
+    public height = 0,
+  ) {}
 }
 
 class MockCircle {
-  constructor(public x = 0, public y = 0, public radius = 0) {}
+  constructor(
+    public x = 0,
+    public y = 0,
+    public radius = 0,
+  ) {}
 }
 
 class MockPoint {
-  constructor(public x = 0, public y = 0) {}
+  constructor(
+    public x = 0,
+    public y = 0,
+  ) {}
   set = (x: number, y: number) => {
     this.x = x;
     this.y = y;
@@ -127,7 +139,12 @@ class MockPoint {
 }
 
 class MockObservablePoint {
-  constructor(public cb: () => void, public scope: any, public _x = 0, public _y = 0) {}
+  constructor(
+    public cb: () => void,
+    public scope: any,
+    public _x = 0,
+    public _y = 0,
+  ) {}
   get x() {
     return this._x;
   }
@@ -289,7 +306,12 @@ const mockPixiReact = {
 const Module = require("module");
 const originalResolveFilename = Module._resolveFilename;
 
-Module._resolveFilename = function (request: string, parent: any, isMain: boolean, options?: any) {
+Module._resolveFilename = function (
+  request: string,
+  parent: any,
+  isMain: boolean,
+  options?: any,
+) {
   if (request === "pixi.js") {
     return "pixi.js";
   }
@@ -298,7 +320,13 @@ Module._resolveFilename = function (request: string, parent: any, isMain: boolea
   }
   if (request.startsWith("@/")) {
     const relativePath = request.slice(2);
-    return originalResolveFilename.call(this, relativePath, parent, isMain, options);
+    return originalResolveFilename.call(
+      this,
+      relativePath,
+      parent,
+      isMain,
+      options,
+    );
   }
   return originalResolveFilename.call(this, request, parent, isMain, options);
 };
@@ -314,4 +342,6 @@ Module._load = function (request: string, parent: any, isMain: boolean) {
   return originalLoad.call(this, request, parent, isMain);
 };
 
-console.log("✓ Test setup complete - PixiJS mocked and path aliases configured");
+console.log(
+  "✓ Test setup complete - PixiJS mocked and path aliases configured",
+);

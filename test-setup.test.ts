@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { parseSimaiChart } from "@/app/player/data/simai";
+import { parseSimaiChart } from "@/lib/simai";
 
 describe("bun test infrastructure", () => {
   it("should resolve @/ path aliases", () => {
