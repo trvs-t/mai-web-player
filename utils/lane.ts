@@ -10,3 +10,11 @@ export function getLaneDifference(lane1: number, lane2: number) {
   if (diff < 0) return diff + 8;
   return diff;
 }
+
+export function getLanePosition(lane: Lane | number, radius: number) {
+  const angle = getLaneRotationRadian(lane);
+  return {
+    x: radius * Math.cos(angle),
+    y: radius * Math.sin(angle),
+  };
+}
