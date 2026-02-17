@@ -219,7 +219,7 @@ Implement TOUCH and TOUCH HOLD notes that appear on the screen's touch sensors (
 Add support for WiFi slides (`w` type) - fan-shaped slides that cover 3 endpoints from a single start point. These are common in advanced charts.
 
 **Reference Images**:  
-- [Slide Patterns Table](./docs/references/slide-patterns-table.png) - Official simai wiki table showing all slide types including WiFi (扇形/w) in the bottom-left section
+- [Wifi Slide](./docs/references/slide-wifi.png) - Example of wifi slide from 1 to 5 (1w5)
 
 **Implementation Details**:
 
@@ -233,8 +233,8 @@ Add support for WiFi slides (`w` type) - fan-shaped slides that cover 3 endpoint
 **Syntax Examples**:
 
 ```simai
-1w4[4:1]    # Fan from 1 covering lanes 4, 5, 6
-3w6[8:3]    # Fan from 3 covering lanes 6, 7, 8
+1w5[4:1]    # Fan from 1 covering lanes 4, 5, 6
+3w7[8:3]    # Fan from 3 covering lanes 6, 7, 8
 ```
 
 **Acceptance Criteria**:
