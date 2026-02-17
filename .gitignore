@@ -10,9 +10,11 @@
 *.lcov
 .nyc_output
 
-# next.js
-/.next/
-/out/
+# TanStack Start / Vite
+/dist/
+/.vinxi/
+*.tsbuildinfo
+src/routeTree.gen.ts
 
 # production
 /build
@@ -33,8 +35,7 @@ yarn-error.log*
 # vercel
 .vercel
 
-# typescript
-*.tsbuildinfo
+# typescript (legacy Next.js)
 next-env.d.ts
 
 # bun
