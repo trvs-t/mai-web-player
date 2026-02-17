@@ -1,16 +1,69 @@
 "use client";
 import { Howl } from "howler";
-import { useMemo, useState } from "react";
-import { AudioContext, AudioTimerProvider } from "./context/audio";
+import { useContext, useMemo, useState } from "react";
+import {
+  AudioContext,
+  AudioTimerProvider,
+  FreeRunChartContext,
+  FreeRunTimerProvider,
+} from "./context/audio";
 import { BridgedStage } from "./context/bridge";
 import { ChartContext } from "./context/chart";
 import { PlayerContext } from "./context/player";
-import { TimerProvider } from "./context/timer";
+import {
+  TimerConfigContext,
+  TimerProvider,
+  TimerContext,
+} from "./context/timer";
 import { TimerControls } from "./controls";
 import { Chart } from "./data/chart";
 import { parseSimaiChart } from "./data/simai";
 import { Player } from "./player";
+import { Metronome } from "./view/metronome";
 import { SlidePaths } from "./view/slide/slide-paths";
+
+function TimerProviderSelector({
+  children,
+  music,
+  audioOffset,
+  chart,
+}: {
+  children: React.ReactNode;
+  music: Howl | null;
+  audioOffset: number;
+  chart: Chart | null;
+}) {
+  const timerConfig = useContext(TimerConfigContext);
+
+  if (timerConfig.mode === "free-run") {
+    return (
+      <FreeRunChartContext.Provider value={{ chart }}>
+        <FreeRunTimerProvider>{children}</FreeRunTimerProvider>
+      </FreeRunChartContext.Provider>
+    );
+  }
+
+  return (
+    <AudioContext.Provider
+      value={music ? { music, offset: audioOffset } : null}
+    >
+      <AudioTimerProvider>{children}</AudioTimerProvider>
+    </AudioContext.Provider>
+  );
+}
+
+function MetronomeWrapper({ chart }: { chart: Chart | null }) {
+  const timerConfig = useContext(TimerConfigContext);
+  const timer = useContext(TimerContext);
+
+  return (
+    <Metronome
+      chart={chart}
+      currentTime={timer.time}
+      isActive={timerConfig.mode === "free-run"}
+    />
+  );
+}
 
 const Page = () => {
   const [src, setSrc] = useState<string | null>(null);
@@ -48,50 +101,60 @@ const Page = () => {
   );
 
   return (
-    <div>
-      <h1>Maimai Player</h1>
-      <div className="grid grid-cols-2">
-        <div>
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-4">Maimai Player</h1>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-4">
           <SlidePaths />
-          <AudioContext.Provider
-            value={music ? { music, offset: audioOffset } : null}
-          >
-            <PlayerContext.Provider
-              value={{
-                position: [300, 300],
-                radius: 200,
-                noteDuration: 500,
-              }}
-            >
-              <ChartContext.Provider value={chart}>
-                <TimerProvider>
-                  <BridgedStage>
-                    <AudioTimerProvider>
-                      <Player />
-                    </AudioTimerProvider>
-                  </BridgedStage>
-                  <TimerControls />
-                </TimerProvider>
-              </ChartContext.Provider>
-            </PlayerContext.Provider>
-          </AudioContext.Provider>
-          <input
-            type="number"
-            value={audioOffset}
-            onChange={(e) => {
-              console.log(e.target.value);
-              setAudioOffset(+e.target.value);
+          <PlayerContext.Provider
+            value={{
+              position: [300, 300],
+              radius: 200,
+              noteDuration: 500,
             }}
-            className="text-black"
-          />
-          <input type="file" onChange={onFilesPicked} />
+          >
+            <ChartContext.Provider value={chart}>
+              <TimerProvider>
+                <BridgedStage>
+                  <TimerProviderSelector
+                    music={music}
+                    audioOffset={audioOffset}
+                    chart={chart}
+                  >
+                    <Player />
+                  </TimerProviderSelector>
+                </BridgedStage>
+                <TimerControls />
+                <MetronomeWrapper chart={chart} />
+              </TimerProvider>
+            </ChartContext.Provider>
+          </PlayerContext.Provider>
+          <div className="flex items-center gap-2">
+            <label className="text-sm">Audio Offset (ms):</label>
+            <input
+              type="number"
+              value={audioOffset}
+              onChange={(e) => setAudioOffset(+e.target.value)}
+              className="text-black px-2 py-1 border rounded w-24"
+            />
+            <input
+              type="file"
+              accept="audio/*"
+              onChange={onFilesPicked}
+              className="text-sm"
+            />
+          </div>
         </div>
-        <div className="w-full h-100">
+        <div className="w-full">
+          <label className="block text-sm font-medium mb-2">
+            Simai Chart Editor
+          </label>
           <textarea
             value={simai}
             onChange={(e) => setSimai(e.target.value)}
-            rows={20}
-            className="w-full text-black"
+            rows={25}
+            className="w-full text-black p-2 border rounded font-mono text-sm"
+            placeholder="Paste your simai chart here..."
           />
         </div>
       </div>
