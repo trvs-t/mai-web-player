@@ -423,3 +423,105 @@ export function getMeasureDisplay(
   );
   return `M${measure.measureNumber} B${beatInMeasure + 1}`;
 }
+
+export interface TimeSortedNoteIndex {
+  notes: NoteVisualization[];
+  sortedByHitTime: NoteVisualization[];
+}
+
+export function createTimeSortedIndex(
+  notes: NoteVisualization[],
+): TimeSortedNoteIndex {
+  const sortedByHitTime = [...notes].sort((a, b) => {
+    const aTime = getNoteEndTime(a);
+    const bTime = getNoteEndTime(b);
+    return aTime - bTime;
+  });
+  return {
+    notes,
+    sortedByHitTime,
+  };
+}
+
+function getNoteEndTime(note: NoteVisualization): number {
+  const baseTime = (note.data as { hitTime: number }).hitTime;
+  
+  if (note.type === "hold") {
+    return baseTime + (note.data as HoldVisualizeData).duration;
+  }
+  if (note.type === "touchHold") {
+    return baseTime + (note.data as TouchHoldVisualizeData).duration;
+  }
+  if (note.type === "slide") {
+    return baseTime + (note.data as SlideVisualizationData).duration;
+  }
+  
+  return baseTime;
+}
+
+function getNoteStartTime(note: NoteVisualization): number {
+  return (note.data as { hitTime: number }).hitTime;
+}
+
+export function getVisibleNotes(
+  index: TimeSortedNoteIndex,
+  currentTime: number,
+  windowMs: number = 2000,
+): NoteVisualization[] {
+  const { sortedByHitTime } = index;
+  if (sortedByHitTime.length === 0) return [];
+
+  const windowStart = currentTime - windowMs;
+  const windowEnd = currentTime + windowMs;
+
+  const startIndex = findFirstVisibleNote(sortedByHitTime, windowStart);
+  const endIndex = findLastVisibleNote(sortedByHitTime, windowEnd);
+
+  return sortedByHitTime.slice(startIndex, endIndex + 1);
+}
+
+function findFirstVisibleNote(
+  notes: NoteVisualization[],
+  windowStart: number,
+): number {
+  let left = 0;
+  let right = notes.length - 1;
+  let result = 0;
+
+  while (left <= right) {
+    const mid = Math.floor((left + right) / 2);
+    const noteEndTime = getNoteEndTime(notes[mid]);
+
+    if (noteEndTime >= windowStart) {
+      result = mid;
+      right = mid - 1;
+    } else {
+      left = mid + 1;
+    }
+  }
+
+  return result;
+}
+
+function findLastVisibleNote(
+  notes: NoteVisualization[],
+  windowEnd: number,
+): number {
+  let left = 0;
+  let right = notes.length - 1;
+  let result = notes.length - 1;
+
+  while (left <= right) {
+    const mid = Math.floor((left + right) / 2);
+    const noteStartTime = getNoteStartTime(notes[mid]);
+
+    if (noteStartTime <= windowEnd) {
+      result = mid;
+      left = mid + 1;
+    } else {
+      right = mid - 1;
+    }
+  }
+
+  return result;
+}

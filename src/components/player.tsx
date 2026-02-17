@@ -3,11 +3,14 @@ import { Container } from "@pixi/react";
 import { useContext, useMemo } from "react";
 import { ChartContext } from "../contexts/chart";
 import { PlayerContext } from "../contexts/player";
+import { TimerContext } from "../contexts/timer";
 import {
   SlideVisualizationData,
   TouchHoldVisualizeData,
   TouchVisualizeData,
   convertChartVisualizationData,
+  createTimeSortedIndex,
+  getVisibleNotes,
 } from "../lib/visualization";
 import { Hold } from "./view/hold";
 import { Ring } from "./view/ring";
@@ -18,34 +21,62 @@ import { Touch } from "./view/touch";
 import { TouchHold } from "./view/touch-hold";
 
 const lanes = Array.from({ length: 8 }, (_, i) => i + 1);
+const CULLING_WINDOW_MS = 2000;
 
 export const Player = () => {
   const { position } = useContext(PlayerContext);
+  const { time: currentTime } = useContext(TimerContext);
 
   const chart = useContext(ChartContext);
-  const visualizationChart = useMemo(() => {
-    if (!chart?.items.length) return [];
+  const noteIndex = useMemo(() => {
+    if (!chart?.items.length) return null;
     try {
-      return convertChartVisualizationData(chart);
+      const notes = convertChartVisualizationData(chart);
+      return createTimeSortedIndex(notes);
     } catch (e) {
       console.error(e);
-      return [];
+      return null;
     }
   }, [chart]);
-  const slides = visualizationChart.filter(
+
+  const visibleNotes = useMemo(() => {
+    if (!noteIndex) return [];
+    return getVisibleNotes(noteIndex, currentTime, CULLING_WINDOW_MS);
+  }, [noteIndex, currentTime]);
+
+  const slides = visibleNotes.filter(
     (note): note is { type: "slide"; data: SlideVisualizationData } =>
       note.type === "slide",
   );
 
-  const touchNotes = visualizationChart.filter(
+  const touchNotes = visibleNotes.filter(
     (note): note is { type: "touch"; data: TouchVisualizeData } =>
       note.type === "touch",
   );
 
-  const touchHoldNotes = visualizationChart.filter(
+  const touchHoldNotes = visibleNotes.filter(
     (note): note is { type: "touchHold"; data: TouchHoldVisualizeData } =>
       note.type === "touchHold",
   );
+
+  const laneNotes = useMemo(() => {
+    const byLane: Record<number, typeof visibleNotes> = {};
+    for (let i = 1; i <= 8; i++) {
+      byLane[i] = [];
+    }
+    
+    for (const note of visibleNotes) {
+      if (note.type === "tap" || note.type === "hold") {
+        const lane = (note.data as { lane: number }).lane;
+        byLane[lane]?.push(note);
+      } else if (note.type === "slide") {
+        const lane = (note.data as SlideVisualizationData).lane;
+        byLane[lane]?.push(note);
+      }
+    }
+    
+    return byLane;
+  }, [visibleNotes]);
 
   return (
     <Container position={position} anchor={0.5}>
@@ -60,7 +91,6 @@ export const Player = () => {
           <Touch key={`touch-${i}`} data={data} />
         ))}
       </Container>
-      {/* Slide in it's own container */}
       <Container key="slide">
         {slides.map(({ data }, i) => (
           <Slide key={`slide-${i}`} lane={data.lane} hitTime={data.hitTime} data={data} />
@@ -68,28 +98,26 @@ export const Player = () => {
       </Container>
       {lanes.map((lane) => (
         <Container key={lane} rotation={getLaneRotationRadian(lane)}>
-          {visualizationChart
-            .filter(({ type, data: note }) => type !== "touch" && type !== "touchHold" && (note as { lane: number }).lane === lane)
-            .map(({ type, data: note }, i) => {
-              const typedNote = note as { hitTime: number };
-              const { hitTime } = typedNote;
-              switch (type) {
-                case "tap":
-                  return <Tap key={`${type}-${i}`} data={note as { lane: number; hitTime: number; isEach?: boolean }} />;
-                case "hold":
-                  return (
-                    <Hold
-                      key={`${type}-${i}`}
-                      hitTime={hitTime}
-                      duration={(note as { duration: number }).duration}
-                    />
-                  );
-                case "slide":
-                  return <Star key={`${type}-${i}`} data={note as SlideVisualizationData} />;
-                default:
-                  return null;
-              }
-            })}
+          {laneNotes[lane]?.map(({ type, data: note }, i) => {
+            const typedNote = note as { hitTime: number };
+            const { hitTime } = typedNote;
+            switch (type) {
+              case "tap":
+                return <Tap key={`${type}-${i}`} data={note as { lane: number; hitTime: number; isEach?: boolean }} />;
+              case "hold":
+                return (
+                  <Hold
+                    key={`${type}-${i}`}
+                    hitTime={hitTime}
+                    duration={(note as { duration: number }).duration}
+                  />
+                );
+              case "slide":
+                return <Star key={`${type}-${i}`} data={note as SlideVisualizationData} />;
+              default:
+                return null;
+            }
+          })}
         </Container>
       ))}
     </Container>
