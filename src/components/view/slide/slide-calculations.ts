@@ -3,6 +3,40 @@ export interface ArrowRenderParams {
   shouldRender: boolean;
 }
 
+// Maximum wait time before starting to disappear (as fraction of duration)
+// This ensures short slides still have time for sequential fade
+const MAX_WAIT_FRACTION = 0.5; // Wait at most 50% of duration
+
+export function calculateDisappearProgress(
+  time: number,
+  startTime: number,
+  duration: number,
+  measureDurationMs: number,
+): { phase: "VISIBLE" | "DISAPPEARING" | "COMPLETE"; progress: number } {
+  const endTime = startTime + duration;
+
+  // Cap wait time to ensure we have time for sequential fade
+  // Wait at most MAX_WAIT_FRACTION of duration, but not more than measureDurationMs
+  const actualWaitTime = Math.min(measureDurationMs, duration * MAX_WAIT_FRACTION);
+  const disappearStartTime = startTime + actualWaitTime;
+  const disappearDuration = endTime - disappearStartTime;
+
+  if (time >= endTime) {
+    return { phase: "COMPLETE", progress: 1 };
+  }
+
+  if (time < disappearStartTime) {
+    return { phase: "VISIBLE", progress: 0 };
+  }
+
+  // Calculate progress through disappearing phase (0 to 1)
+  const progress = disappearDuration > 0
+    ? (time - disappearStartTime) / disappearDuration
+    : 1;
+
+  return { phase: "DISAPPEARING", progress: Math.min(1, progress) };
+}
+
 export function calculateArrowAlpha(
   arrowIndex: number,
   totalArrows: number,
