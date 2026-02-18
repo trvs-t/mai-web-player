@@ -181,16 +181,16 @@ function PlayerPage() {
           >
             <ChartContext.Provider value={chart}>
               <TimerProvider>
-                <BridgedStage>
-                  <TimerProviderSelector
-                    music={music}
-                    audioOffset={audioOffset}
-                    chart={chart}
-                  >
+                <TimerProviderSelector
+                  music={music}
+                  audioOffset={audioOffset}
+                  chart={chart}
+                >
+                  <BridgedStage>
                     <Player />
-                  </TimerProviderSelector>
-                </BridgedStage>
-                <TimerControls measures={measureData?.measures} />
+                  </BridgedStage>
+                  <TimerControls measures={measureData?.measures} />
+                </TimerProviderSelector>
                 <MetronomeWrapper chart={chart} />
               </TimerProvider>
             </ChartContext.Provider>
