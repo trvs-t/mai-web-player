@@ -2,59 +2,90 @@ import { getLaneDifference, getLaneRotationRadian } from "../../../../utils/lane
 import { AngledPoint, splitPath } from "../../../../utils/svg";
 import { Container, Graphics } from "@pixi/react";
 import { type Graphics as PixiGraphics } from "pixi.js";
-import { useCallback, useContext, useEffect, useState } from "react";
-import { useTimerTween } from "../../../hooks/timer-tween";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useSlideAnimation } from "../../../hooks/use-slide-animation";
 import { PlayerContext } from "../../../contexts/player";
-import { TimerContext } from "../../../contexts/timer";
 import { SlideVisualizationData } from "../../../lib/visualization";
 import { useSlidePath } from "./slide-path.hook";
 
+const CHEVRON_SIZE = 8;
+
+function drawRotatedChevron(
+  g: PixiGraphics,
+  x: number,
+  y: number,
+  angle: number,
+  size: number,
+  alpha: number,
+) {
+  const cos = Math.cos(angle);
+  const sin = Math.sin(angle);
+
+  const rotate = (px: number, py: number): [number, number] => [
+    x + px * cos - py * sin,
+    y + px * sin + py * cos,
+  ];
+
+  const [x1, y1] = rotate(-size, -size);
+  const [x2, y2] = rotate(size, 0);
+  const [x3, y3] = rotate(-size, size);
+
+  g.lineStyle(2, 0xffffff, alpha);
+  g.moveTo(x1, y1);
+  g.lineTo(x2, y2);
+  g.moveTo(x3, y3);
+  g.lineTo(x2, y2);
+}
+
 export function Slide({
   lane,
-  hitTime,
   data,
 }: {
   lane: number;
-  hitTime: number;
   data: SlideVisualizationData;
 }) {
-  const { slideType, direction, destinationLane } = data;
-  const rotation = getLaneRotationRadian(lane);
-  useContext(TimerContext);
+  const { slideType, direction, destinationLane, hitTime, startTime, duration, measureDurationMs } = data;
   const { radius } = useContext(PlayerContext);
   const destinationDifference = getLaneDifference(lane, destinationLane);
-  const { slidePath: path } = useSlidePath({
+  const { slidePath: path, mirror } = useSlidePath({
     slideType,
     direction,
     destinationDifference,
   });
   const [points, setPoints] = useState<AngledPoint[]>([]);
-  const { progress } = useTimerTween(hitTime, data.duration);
+
+  const { phase, fadeInProgress, isArrowVisible } = useSlideAnimation(
+    hitTime,
+    startTime,
+    duration,
+    points.length,
+    measureDurationMs,
+  );
+
+  const laneRotation = getLaneRotationRadian(lane);
+  const laneOffsetAngle = useMemo(() => {
+    // SVG paths are designed for lane 1, so rotate to match actual lane
+    return laneRotation - getLaneRotationRadian(1);
+  }, [laneRotation]);
+
   useEffect(() => {
     if (!path) return;
-    const paths = splitPath(path, 20);
-    setPoints(paths);
+    const sampledPoints = splitPath(path, 20);
+    setPoints(sampledPoints);
   }, [path]);
 
   const draw = useCallback(
     (g: PixiGraphics) => {
       g.clear();
+
+      if (phase === "BEFORE_START" || phase === "COMPLETE") {
+        return;
+      }
+
       if (points.length === 0) return;
 
-      const visiblePoints = points.slice(
-        0,
-        Math.max(1, Math.floor(points.length * progress)),
-      );
-
-      if (visiblePoints.length < 2) return;
-
-      // Transform SVG coordinates to canvas coordinates
-      // SVG viewBox: 0 0 1080 1080, center at (540, 540)
-      // Canvas: center at (0, 0), radius from PlayerContext
       const svgCenter = 540;
       const scaleFactor = radius / svgCenter;
-
-      g.lineStyle(2, 0xffffff);
 
       const transformPoint = (point: [number, number]): [number, number] => {
         const x = (point[0] - svgCenter) * scaleFactor;
@@ -62,19 +93,43 @@ export function Slide({
         return [x, y];
       };
 
-      const startPoint = transformPoint(visiblePoints[0].point);
-      g.moveTo(startPoint[0], startPoint[1]);
+      const rotatePoint = (point: [number, number], angle: number): [number, number] => {
+        const cos = Math.cos(angle);
+        const sin = Math.sin(angle);
+        const [x, y] = point;
+        return [x * cos - y * sin, x * sin + y * cos];
+      };
 
-      for (let i = 1; i < visiblePoints.length; i++) {
-        const point = transformPoint(visiblePoints[i].point);
-        g.lineTo(point[0], point[1]);
+      for (let i = 0; i < points.length; i++) {
+        if (!isArrowVisible(i)) continue;
+
+        const angledPoint = points[i];
+        let [x, y] = transformPoint(angledPoint.point);
+
+        // Apply lane rotation offset so path starts at correct lane
+        [x, y] = rotatePoint([x, y], laneOffsetAngle);
+
+        // Apply mirror flip for clockwise slides if needed
+        if (mirror) {
+          x = -x;
+        }
+
+        const arrowThreshold = i / points.length;
+        let alpha = 1;
+        if (phase === "FADING_IN") {
+          const fadeRange = 0.1;
+          const localProgress = (fadeInProgress - arrowThreshold) / fadeRange;
+          alpha = Math.max(0, Math.min(1, localProgress));
+        }
+
+        drawRotatedChevron(g, x, y, angledPoint.angle + laneOffsetAngle, CHEVRON_SIZE, alpha);
       }
     },
-    [points, progress, radius],
+    [points, phase, fadeInProgress, isArrowVisible, radius, laneOffsetAngle, mirror],
   );
 
   return (
-    <Container rotation={rotation} position={[0, 0]}>
+    <Container position={[0, 0]}>
       <Graphics draw={draw} />
     </Container>
   );
