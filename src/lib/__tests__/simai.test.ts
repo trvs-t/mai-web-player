@@ -23,7 +23,8 @@ import {
   THUNDER_SLIDE_CW,
   THUNDER_SLIDE_CCW,
   V_SLIDE,
-  L_SLIDE,
+  L_SLIDE_CW,
+  L_SLIDE_CCW,
   AUTO_CIRCLE_SLIDE,
   SAME_ORIGIN_SLIDES,
   COMPLEX_CHART,
@@ -538,25 +539,66 @@ describe("Simai Parser - V-Shape Slides", () => {
 });
 
 describe("Simai Parser - L-Shape Slides", () => {
-  it("should parse L-shape slide with correct syntax 1V25[4:1]", () => {
-    const result = parseSimaiChart("(120){4}1V25[4:1],E");
-    const notes = extractNotes(result);
-    expect(notes.length).toBeGreaterThan(0);
-    const slide = notes.find((n) => n.data.type === "slide");
+  it("should parse L-shape CW slide with midpoint +2 lanes 1V35[4:1]", () => {
+    const result = parseSimaiChart("(120){4}1V35[4:1],E");
+    const slide = findFirstNoteOfType(result, "slide");
     expect(slide).toBeDefined();
     if (slide && isSlideData(slide.data)) {
       expect(slide.data.slideType).toBe("L");
+      expect(slide.data.direction).toBe("cw");
     }
   });
 
-  it("should parse L-shape from various starting lanes", () => {
-    for (let start = 1; start <= 8; start++) {
-      const mid = (start % 8) + 1;
-      const dest = ((start + 1) % 8) + 1;
+  it("should parse L-shape CCW slide with midpoint -2 lanes 1V75[4:1]", () => {
+    const result = parseSimaiChart("(120){4}1V75[4:1],E");
+    const slide = findFirstNoteOfType(result, "slide");
+    expect(slide).toBeDefined();
+    if (slide && isSlideData(slide.data)) {
+      expect(slide.data.slideType).toBe("L");
+      expect(slide.data.direction).toBe("ccw");
+    }
+  });
+
+  it("should parse L-shape CW from various starting lanes (midpoint = start + 2)", () => {
+    // CW L-shapes: midpoint is +2 lanes from start
+    const testCases = [
+      { start: 1, mid: 3, dest: 5 },
+      { start: 2, mid: 4, dest: 6 },
+      { start: 3, mid: 5, dest: 7 },
+      { start: 4, mid: 6, dest: 8 },
+      { start: 5, mid: 7, dest: 1 },
+      { start: 6, mid: 8, dest: 2 },
+      { start: 7, mid: 1, dest: 3 },
+      { start: 8, mid: 2, dest: 4 },
+    ];
+    for (const { start, mid, dest } of testCases) {
       const result = parseSimaiChart(`(120){4}${start}V${mid}${dest}[4:1],E`);
       const note = findFirstNoteOfType(result, "slide");
       if (note && isSlideData(note.data)) {
         expect(note.data.slideType).toBe("L");
+        expect(note.data.direction).toBe("cw");
+      }
+    }
+  });
+
+  it("should parse L-shape CCW from various starting lanes (midpoint = start - 2)", () => {
+    // CCW L-shapes: midpoint is -2 lanes from start
+    const testCases = [
+      { start: 1, mid: 7, dest: 5 },
+      { start: 2, mid: 8, dest: 6 },
+      { start: 3, mid: 1, dest: 7 },
+      { start: 4, mid: 2, dest: 8 },
+      { start: 5, mid: 3, dest: 1 },
+      { start: 6, mid: 4, dest: 2 },
+      { start: 7, mid: 5, dest: 3 },
+      { start: 8, mid: 6, dest: 4 },
+    ];
+    for (const { start, mid, dest } of testCases) {
+      const result = parseSimaiChart(`(120){4}${start}V${mid}${dest}[4:1],E`);
+      const note = findFirstNoteOfType(result, "slide");
+      if (note && isSlideData(note.data)) {
+        expect(note.data.slideType).toBe("L");
+        expect(note.data.direction).toBe("ccw");
       }
     }
   });

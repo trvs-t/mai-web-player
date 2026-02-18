@@ -95,10 +95,20 @@ export const THUNDER_SLIDE_CCW = "(120){4}1s5[4:1],E";
 export const V_SLIDE = "(120){4}1v5[4:1],E";
 
 /**
- * L-shape slide from lane 1 via lane 2 to lane 3.
- * Expected result: Slide note of type "L" with midpoint at lane 2.
+ * L-shape slide (clockwise) from lane 1 via lane 3 to lane 5.
+ * Format: start V midpoint end [duration]
+ * Midpoint is +2 lanes from start (CW direction).
+ * Expected result: Slide note of type "L" with direction "cw" and midpoint at lane 3.
  */
-export const L_SLIDE = "(120){4}1V235[4:1],E";
+export const L_SLIDE_CW = "(120){4}1V35[4:1],E";
+
+/**
+ * L-shape slide (counter-clockwise) from lane 1 via lane 7 to lane 5.
+ * Format: start V midpoint end [duration]
+ * Midpoint is -2 lanes from start (CCW direction).
+ * Expected result: Slide note of type "L" with direction "ccw" and midpoint at lane 7.
+ */
+export const L_SLIDE_CCW = "(120){4}1V75[4:1],E";
 
 /**
  * Auto-direction circle slide using ^ notation.
@@ -177,7 +187,8 @@ export const ALL_FIXTURES = [
   { name: "THUNDER_SLIDE_CW", simai: THUNDER_SLIDE_CW },
   { name: "THUNDER_SLIDE_CCW", simai: THUNDER_SLIDE_CCW },
   { name: "V_SLIDE", simai: V_SLIDE },
-  { name: "L_SLIDE", simai: L_SLIDE },
+  { name: "L_SLIDE_CW", simai: L_SLIDE_CW },
+  { name: "L_SLIDE_CCW", simai: L_SLIDE_CCW },
   { name: "AUTO_CIRCLE_SLIDE", simai: AUTO_CIRCLE_SLIDE },
   { name: "SAME_ORIGIN_SLIDES", simai: SAME_ORIGIN_SLIDES },
   { name: "COMPLEX_CHART", simai: COMPLEX_CHART },
