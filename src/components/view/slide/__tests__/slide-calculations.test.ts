@@ -137,7 +137,7 @@ describe("slide-calculations", () => {
     it("should add 90 degrees to point along tangent", () => {
       const pathAngle = 0; // Pointing right
       const laneOffset = 0;
-      const result = calculateChevronAngle(pathAngle, laneOffset);
+      const result = calculateChevronAngle(pathAngle, laneOffset, false);
       // Should be rotated 90 degrees (PI/2) to point along tangent
       expect(result).toBe(Math.PI / 2);
     });
@@ -145,8 +145,16 @@ describe("slide-calculations", () => {
     it("should combine path angle and lane offset", () => {
       const pathAngle = Math.PI / 4; // 45 degrees
       const laneOffset = Math.PI / 4; // 45 degrees
-      const result = calculateChevronAngle(pathAngle, laneOffset);
+      const result = calculateChevronAngle(pathAngle, laneOffset, false);
       expect(result).toBe(Math.PI / 4 + Math.PI / 4 + Math.PI / 2);
+    });
+
+    it("should negate path angle when mirrored", () => {
+      const pathAngle = Math.PI / 4; // 45 degrees
+      const laneOffset = 0;
+      const result = calculateChevronAngle(pathAngle, laneOffset, true);
+      // Mirrored: -45 + 0 + 90 = 45 degrees
+      expect(result).toBe(-Math.PI / 4 + Math.PI / 2);
     });
   });
 });

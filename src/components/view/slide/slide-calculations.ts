@@ -81,29 +81,30 @@ export function transformSlidePoint(
   let x = (point[0] - svgCenter) * scaleFactor;
   let y = (point[1] - svgCenter) * scaleFactor;
 
+  // Apply mirror flip for clockwise slides BEFORE rotation
+  // This ensures we flip around the SVG's y-axis, not the rotated axis
+  if (mirror) {
+    x = -x;
+  }
+
   // Apply lane rotation
   const cos = Math.cos(laneOffsetAngle);
   const sin = Math.sin(laneOffsetAngle);
   const rotatedX = x * cos - y * sin;
   const rotatedY = x * sin + y * cos;
 
-  x = rotatedX;
-  y = rotatedY;
-
-  // Apply mirror flip for clockwise slides
-  if (mirror) {
-    x = -x;
-  }
-
-  return [x, y];
+  return [rotatedX, rotatedY];
 }
 
 export function calculateChevronAngle(
   pathAngle: number,
   laneOffsetAngle: number,
+  mirror: boolean,
 ): number {
   // The path angle is the tangent direction
   // We need to rotate the chevron 90 degrees CW so it points along the tangent
   // instead of pointing toward the center
-  return pathAngle + laneOffsetAngle + Math.PI / 2;
+  // For mirrored (CW) slides, we negate the path angle to account for the flip
+  const effectivePathAngle = mirror ? -pathAngle : pathAngle;
+  return effectivePathAngle + laneOffsetAngle + Math.PI / 2;
 }
