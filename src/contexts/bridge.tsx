@@ -28,7 +28,9 @@ export function BridgedStage({
                             <AudioContext.Provider value={audio}>
                               <ChartContext.Provider value={chart}>
                                 <TimerContext.Provider value={timer}>
-                                  <TimeControlContext.Provider value={timeControl}>
+                                  <TimeControlContext.Provider
+                                    value={timeControl}
+                                  >
                                     {children}
                                   </TimeControlContext.Provider>
                                 </TimerContext.Provider>

@@ -37,6 +37,7 @@ bun test --grep "TapChartData"
 ## Code Style
 
 ### Imports
+
 - **Alias**: Use `@/` for `src/`, `@/utils/` for `utils/`
 - **Order**: React → External libs → Internal (`@/`) → Relative (`../`)
 - **Types**: Use `import type { X }` for type-only imports
@@ -50,6 +51,7 @@ import type { Chart } from "@/lib/chart";
 ```
 
 ### Formatting
+
 - **Tool**: oxfmt (Prettier-compatible, 30x faster)
 - **Width**: 80 characters
 - **Indent**: 2 spaces (no tabs)
@@ -58,6 +60,7 @@ import type { Chart } from "@/lib/chart";
 - **Trailing commas**: Always
 
 ### Naming
+
 - **Files**: kebab-case (`timer-context.tsx`)
 - **Components**: PascalCase (`Player`, `TimerControls`)
 - **Hooks**: camelCase starting with `use` (`useTimer`, `useLaneMovement`)
@@ -65,18 +68,21 @@ import type { Chart } from "@/lib/chart";
 - **Constants**: UPPER_SNAKE_CASE for true constants
 
 ### Types (Strict TypeScript)
+
 - Enable strict mode - no `any` without justification
 - Discriminated unions for note types (`type: "tap" | "hold" | "slide"`)
 - Explicit return types on exported functions
 - No `as` assertions unless absolutely necessary
 
 ### Error Handling
+
 - Use custom error types with context
 - Validate inputs at boundaries (parsers, API)
 - Fail fast with clear error messages
 - Never suppress errors silently
 
 ### React Patterns
+
 - **Contexts**: One file per domain (`timer.tsx`, `audio.tsx`)
 - **Hooks**: Co-locate related logic, extract reusable patterns
 - **Components**: Prefer composition over inheritance
@@ -101,18 +107,21 @@ describe("Feature Name", () => {
 ```
 
 ### Test File Organization
+
 - **Location**: `src/lib/__tests__/*.test.ts` or `src/lib/__tests__/*.test.tsx`
 - **Naming**: `feature.test.ts` (kebab-case)
 - **Helpers**: `src/lib/__tests__/helpers.ts` for shared utilities
 - **Fixtures**: `src/lib/__tests__/fixtures.ts` for test data
 
 ### Test Patterns
+
 - Use `describe` blocks for grouping
 - Test edge cases and error conditions
 - Use snapshots for complex parser output
 - Helper functions should throw descriptive errors
 
 ### Running Tests
+
 ```bash
 # Single file
 bun test src/lib/__tests__/chart.test.ts
@@ -180,6 +189,7 @@ Use semantic prefixes with optional scope:
 ```
 
 ### Types
+
 - **feat**: New feature
 - **fix**: Bug fix
 - **refactor**: Code change that neither fixes nor adds feature
@@ -189,11 +199,13 @@ Use semantic prefixes with optional scope:
 - **chore**: Build/config/tooling changes
 
 ### Scopes (examples)
+
 - `(timer)`, `(audio)`, `(parser)`, `(slides)`, `(rendering)`
 - `(controls)`, `(export)`, `(pooling)`, `(culling)`
 - `(stats)`, `(player)`, `(bridge)`
 
 ### Examples
+
 ```
 feat(slides): add WiFi slide support
 fix(timer): resolve context mismatch in audio sync mode
@@ -211,6 +223,7 @@ docs: update architecture diagram
 ## Migration Notes
 
 **From Next.js to TanStack Start:**
+
 - `app/*` → `src/routes/*`
 - `app/layout.tsx` → `src/routes/__root.tsx`
 - No `use client` directives (all client-side)

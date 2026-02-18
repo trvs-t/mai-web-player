@@ -62,7 +62,7 @@ class ObjectPool<T extends Poolable> {
     this.inUse.delete(item);
     this.config.reset(item);
     item.visible = true;
-    
+
     if (this.available.length < this.config.maxSize) {
       this.available.push(item);
     } else {
@@ -145,7 +145,9 @@ export function releaseGraphics(name: string, graphics: Graphics): void {
   getGraphicsPool(name).release(graphics);
 }
 
-export function getPoolStats(name: string): { available: number; inUse: number; totalCreated: number } | null {
+export function getPoolStats(
+  name: string,
+): { available: number; inUse: number; totalCreated: number } | null {
   const pool = graphicsPools.get(name);
   return pool ? pool.getStats() : null;
 }

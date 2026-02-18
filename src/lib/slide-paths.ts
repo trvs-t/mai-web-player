@@ -136,9 +136,7 @@ export function getSlidePathIndex({
     return effectiveDirection === "ccw" ? pathIndex : 3 - pathIndex;
   }
 
-  return effectiveDirection === "ccw"
-    ? rawIndex
-    : (8 - rawIndex) % 8;
+  return effectiveDirection === "ccw" ? rawIndex : (8 - rawIndex) % 8;
 }
 
 /**
@@ -147,7 +145,7 @@ export function getSlidePathIndex({
  */
 export function getSlidePathId(
   slideType: SlideType,
-  pathIndex: number
+  pathIndex: number,
 ): string | null | undefined {
   const paths = slidePathData[slideType].paths;
 

@@ -1,8 +1,16 @@
 import { Howl } from "howler";
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { Chart } from "../lib/chart";
 import {
   Bookmark,
+  ExtendedTimeControl,
   TimeContorl,
   TimeControlContext,
   Timer,
@@ -77,13 +85,16 @@ export function AudioTimerProvider({
     };
   }, [isPlaying, music, offset]);
 
-  const setTimeAndSync = useCallback((newTime: number) => {
-    setTime(newTime);
-    if (music) {
-      music.seek((newTime + offset) / 1000);
-    }
-    timeControl.setTime(newTime);
-  }, [music, offset, timeControl]);
+  const setTimeAndSync = useCallback(
+    (newTime: number) => {
+      setTime(newTime);
+      if (music) {
+        music.seek((newTime + offset) / 1000);
+      }
+      timeControl.setTime(newTime);
+    },
+    [music, offset, timeControl],
+  );
 
   const play = useCallback(() => {
     if (music) {
@@ -106,7 +117,9 @@ export function AudioTimerProvider({
   const reset = useCallback(() => {
     setTime(isLooping && loopStart !== null ? loopStart : 0);
     if (music) {
-      music.seek(isLooping && loopStart !== null ? (loopStart + offset) / 1000 : 0);
+      music.seek(
+        isLooping && loopStart !== null ? (loopStart + offset) / 1000 : 0,
+      );
     }
     timeControl.reset();
   }, [isLooping, loopStart, music, offset, timeControl]);
@@ -126,25 +139,33 @@ export function AudioTimerProvider({
       time,
       label,
     };
-    setBookmarks((prev) => [...prev, newBookmark].sort((a, b) => a.time - b.time));
+    setBookmarks((prev) =>
+      [...prev, newBookmark].sort((a, b) => a.time - b.time),
+    );
   }, []);
 
   const removeBookmark = useCallback((id: string) => {
     setBookmarks((prev) => prev.filter((b) => b.id !== id));
   }, []);
 
-  const jumpToBookmark = useCallback((id: string) => {
-    const bookmark = bookmarks.find((b) => b.id === id);
-    if (bookmark) {
-      setTimeAndSync(bookmark.time);
-    }
-  }, [bookmarks, setTimeAndSync]);
+  const jumpToBookmark = useCallback(
+    (id: string) => {
+      const bookmark = bookmarks.find((b) => b.id === id);
+      if (bookmark) {
+        setTimeAndSync(bookmark.time);
+      }
+    },
+    [bookmarks, setTimeAndSync],
+  );
 
-  const setLoopRange = useCallback((start: number | null, end: number | null) => {
-    setLoopStart(start);
-    setLoopEnd(end);
-    setIsLooping(start !== null && end !== null && start < end);
-  }, []);
+  const setLoopRange = useCallback(
+    (start: number | null, end: number | null) => {
+      setLoopStart(start);
+      setLoopEnd(end);
+      setIsLooping(start !== null && end !== null && start < end);
+    },
+    [],
+  );
 
   const clearLoop = useCallback(() => {
     setLoopStart(null);
@@ -152,11 +173,14 @@ export function AudioTimerProvider({
     setIsLooping(false);
   }, []);
 
-  const stepFrame = useCallback((direction: 1 | -1) => {
-    const frameDuration = 1000 / 60;
-    const newTime = Math.max(0, timeRef.current + direction * frameDuration);
-    setTimeAndSync(newTime);
-  }, [setTimeAndSync]);
+  const stepFrame = useCallback(
+    (direction: 1 | -1) => {
+      const frameDuration = 1000 / 60;
+      const newTime = Math.max(0, timeRef.current + direction * frameDuration);
+      setTimeAndSync(newTime);
+    },
+    [setTimeAndSync],
+  );
 
   const timer: Timer = {
     isPlaying,
@@ -210,7 +234,7 @@ export function FreeRunTimerProvider({
   children?: React.ReactNode;
 }) {
   const timerConfig = useContext(TimerConfigContext);
-  const timeControl = useContext(TimeControlContext);
+  const timeControl = useContext(TimeControlContext) as ExtendedTimeControl;
   const [time, setTime] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [bookmarks] = useState<Bookmark[]>([]);
@@ -225,7 +249,7 @@ export function FreeRunTimerProvider({
   timeRef.current = time;
   timeControlRef.current = timeControl;
 
-  const freeRunControl: TimeContorl = {
+  const freeRunControl: ExtendedTimeControl = {
     setTime: (newTime: number) => {
       setTime(newTime);
       timeControl.setTime(newTime);
@@ -246,6 +270,24 @@ export function FreeRunTimerProvider({
       setIsPlaying(false);
       setTime(0);
       timeControl.stop();
+    },
+    addBookmark: (time: number, label: string) => {
+      timeControl.addBookmark(time, label);
+    },
+    removeBookmark: (id: string) => {
+      timeControl.removeBookmark(id);
+    },
+    jumpToBookmark: (id: string) => {
+      timeControl.jumpToBookmark(id);
+    },
+    setLoopRange: (start: number | null, end: number | null) => {
+      timeControl.setLoopRange(start, end);
+    },
+    clearLoop: () => {
+      timeControl.clearLoop();
+    },
+    stepFrame: (direction: 1 | -1) => {
+      timeControl.stepFrame(direction);
     },
   };
 

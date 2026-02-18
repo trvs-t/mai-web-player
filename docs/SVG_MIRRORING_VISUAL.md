@@ -106,17 +106,20 @@ When you rotate first, the coordinate system rotates with it. Then when you mirr
 ### Concrete Example: 2>5 CW Slide
 
 **Lane positions (degrees):**
+
 - Lane 1: 202.5° (top-left)
 - Lane 2: 247.5° (bottom-left)
 - Lane 5: 22.5° (top-right)
 - Lane 7: 337.5° (bottom-right)
 
 **What should happen:**
+
 1. Start at Lane 2 (247.5°)
 2. Curve clockwise through Lanes 1, 8, 7, 6
 3. End at Lane 5 (22.5°)
 
 **What actually happens (bug):**
+
 1. Start at Lane 7 (337.5°) ← WRONG!
 2. Curve clockwise through Lanes 6, 5
 3. End at Lane 5 (22.5°)
@@ -129,36 +132,48 @@ In `slide-calculations.ts`, change the order:
 
 ```typescript
 // BEFORE (buggy):
-function transformSlidePoint(point, svgCenter, scaleFactor, laneOffsetAngle, mirror) {
+function transformSlidePoint(
+  point,
+  svgCenter,
+  scaleFactor,
+  laneOffsetAngle,
+  mirror,
+) {
   let x = (point[0] - svgCenter) * scaleFactor;
   let y = (point[1] - svgCenter) * scaleFactor;
-  
+
   // Rotate first
   const cos = Math.cos(laneOffsetAngle);
   const sin = Math.sin(laneOffsetAngle);
   x = x * cos - y * sin;
   y = x * sin + y * cos;
-  
+
   // Then mirror (WRONG!)
   if (mirror) x = -x;
-  
+
   return [x, y];
 }
 
 // AFTER (fixed):
-function transformSlidePoint(point, svgCenter, scaleFactor, laneOffsetAngle, mirror) {
+function transformSlidePoint(
+  point,
+  svgCenter,
+  scaleFactor,
+  laneOffsetAngle,
+  mirror,
+) {
   let x = (point[0] - svgCenter) * scaleFactor;
   let y = (point[1] - svgCenter) * scaleFactor;
-  
+
   // Mirror first (CORRECT!)
   if (mirror) x = -x;
-  
+
   // Then rotate
   const cos = Math.cos(laneOffsetAngle);
   const sin = Math.sin(laneOffsetAngle);
   const rotatedX = x * cos - y * sin;
   const rotatedY = x * sin + y * cos;
-  
+
   return [rotatedX, rotatedY];
 }
 ```
@@ -170,7 +185,9 @@ The hook has a workaround for lower-half lanes (3-6):
 ```typescript
 const isLowerHalf = lane >= 3 && lane <= 6;
 const effectiveDirection = isLowerHalf
-  ? direction === "cw" ? "ccw" : "cw"
+  ? direction === "cw"
+    ? "ccw"
+    : "cw"
   : direction;
 ```
 
@@ -185,9 +202,9 @@ This workaround was likely added to compensate for the mirroring bug. After fixi
 
 ## Summary
 
-| Aspect | Bug | Fix |
-|--------|-----|-----|
-| Mirror timing | After rotation | Before rotation |
-| 2>5 CW result | 7>5 (wrong start) | 2>5 (correct) |
-| Affected lanes | All except Lane 1 | All lanes work correctly |
-| Code change | Reorder 2 code blocks | Simple and minimal |
+| Aspect         | Bug                   | Fix                      |
+| -------------- | --------------------- | ------------------------ |
+| Mirror timing  | After rotation        | Before rotation          |
+| 2>5 CW result  | 7>5 (wrong start)     | 2>5 (correct)            |
+| Affected lanes | All except Lane 1     | All lanes work correctly |
+| Code change    | Reorder 2 code blocks | Simple and minimal       |

@@ -1,4 +1,7 @@
-import { getLaneDifference, getLaneRotationRadian } from "../../../../utils/lane";
+import {
+  getLaneDifference,
+  getLaneRotationRadian,
+} from "../../../../utils/lane";
 import { AngledPoint, splitPath } from "../../../../utils/svg";
 import { Container, Graphics } from "@pixi/react";
 import { type Graphics as PixiGraphics } from "pixi.js";
@@ -50,7 +53,15 @@ export function Slide({
   lane: number;
   data: SlideVisualizationData;
 }) {
-  const { slideType, direction, destinationLane, hitTime, startTime, duration, measureDurationMs } = data;
+  const {
+    slideType,
+    direction,
+    destinationLane,
+    hitTime,
+    startTime,
+    duration,
+    measureDurationMs,
+  } = data;
   const { radius } = useContext(PlayerContext);
   const destinationDifference = getLaneDifference(lane, destinationLane);
   // WiFi uses straight slide path for movement, but renders with fanned arrows
@@ -77,7 +88,9 @@ export function Slide({
     // For CW slides, mirroring shifts the start from lane 1 to lane 8
     // So we need to rotate 1 extra lane (45°) for CW slides
     const baseOffset = laneRotation - getLaneRotationRadian(1);
-    const cwAdjustment = mirror ? getLaneRotationRadian(2) - getLaneRotationRadian(1) : 0;
+    const cwAdjustment = mirror
+      ? getLaneRotationRadian(2) - getLaneRotationRadian(1)
+      : 0;
     return baseOffset + cwAdjustment;
   }, [laneRotation, mirror]);
 
@@ -108,7 +121,10 @@ export function Slide({
         const angledPoint = points[i];
 
         const effectiveIndex = Math.floor(i / step);
-        const totalArrows = slideType === "WiFi" ? Math.ceil(points.length / step) : points.length;
+        const totalArrows =
+          slideType === "WiFi"
+            ? Math.ceil(points.length / step)
+            : points.length;
 
         const { alpha: arrowAlpha, shouldRender } = calculateArrowAlpha(
           effectiveIndex,
@@ -128,19 +144,47 @@ export function Slide({
           mirror,
         );
 
-        const chevronAngle = calculateChevronAngle(angledPoint.angle, laneOffsetAngle, mirror);
+        const chevronAngle = calculateChevronAngle(
+          angledPoint.angle,
+          laneOffsetAngle,
+          mirror,
+        );
 
         if (slideType === "WiFi") {
           // Arrow fans out from small (start) to large (covers lanes 4,5,6 at destination)
-          const progress = totalArrows > 1 ? effectiveIndex / (totalArrows - 1) : 0;
+          const progress =
+            totalArrows > 1 ? effectiveIndex / (totalArrows - 1) : 0;
           const wifiSize = 4 + progress * (WIFI_CHEVRON_SIZE - 4);
-          drawRotatedChevron(g, baseX, baseY, chevronAngle, wifiSize, arrowAlpha);
+          drawRotatedChevron(
+            g,
+            baseX,
+            baseY,
+            chevronAngle,
+            wifiSize,
+            arrowAlpha,
+          );
         } else {
-          drawRotatedChevron(g, baseX, baseY, chevronAngle, CHEVRON_SIZE, arrowAlpha);
+          drawRotatedChevron(
+            g,
+            baseX,
+            baseY,
+            chevronAngle,
+            CHEVRON_SIZE,
+            arrowAlpha,
+          );
         }
       }
     },
-    [points, phase, fadeInProgress, disappearProgress, radius, laneOffsetAngle, mirror, slideType],
+    [
+      points,
+      phase,
+      fadeInProgress,
+      disappearProgress,
+      radius,
+      laneOffsetAngle,
+      mirror,
+      slideType,
+    ],
   );
 
   return (

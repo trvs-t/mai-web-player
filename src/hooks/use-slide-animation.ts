@@ -85,7 +85,9 @@ export function useSlideAnimation(
 
     // DISAPPEARING: disappearStartTime <= time < endTime
     const disappearProgress =
-      disappearDuration > 0 ? (time - disappearStartTime) / disappearDuration : 1;
+      disappearDuration > 0
+        ? (time - disappearStartTime) / disappearDuration
+        : 1;
 
     return {
       phase: "DISAPPEARING",
@@ -97,5 +99,13 @@ export function useSlideAnimation(
         return disappearProgress < arrowThreshold;
       },
     };
-  }, [time, hitTime, startTime, duration, arrowCount, measureDurationMs, noteDuration]);
+  }, [
+    time,
+    hitTime,
+    startTime,
+    duration,
+    arrowCount,
+    measureDurationMs,
+    noteDuration,
+  ]);
 }

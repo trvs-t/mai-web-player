@@ -261,17 +261,17 @@ Automatically chooses shortest direction:
 
 The `>` and `<` arrows indicate the **initial direction** of the slide path relative to the start lane's position:
 
-- **Upper half (lanes 7, 8, 1, 2)**: 
+- **Upper half (lanes 7, 8, 1, 2)**:
   - `>` creates clockwise arcs
   - `<` creates counter-clockwise arcs
-  
 - **Lower half (lanes 3, 4, 5, 6)**:
-  - `>` creates counter-clockwise arcs  
+  - `>` creates counter-clockwise arcs
   - `<` creates clockwise arcs
 
 This opposite handling occurs because the visual rotation of the arrow changes based on which side of the circular playfield the slide starts from.
 
 **Auto-direction (`^`)** always selects the shortest arc:
+
 - `3^6` is equivalent to `3<6` (3 lanes CCW vs 5 lanes CW)
 - `6^3` is equivalent to `6>3` (3 lanes CW vs 5 lanes CCW)
 
@@ -337,6 +337,7 @@ L-shaped slide with a midpoint button. The path goes from start lane to midpoint
 **Syntax:** `STARTVMIDEND[duration]`
 
 **Midpoint Rules:**
+
 - The midpoint must be exactly **2 lanes away** from the start lane (±2)
 - Direction is determined by the midpoint position:
   - **Clockwise (CW):** Midpoint is +2 lanes from start (e.g., lane 1 → lane 3)
@@ -357,6 +358,7 @@ L-shaped slide with a midpoint button. The path goes from start lane to midpoint
 ```
 
 **Valid End Lanes by Direction:**
+
 - **CW slides:** End at lanes start+4, start+5, start+6, or start+7 (wrapping around)
 - **CCW slides:** End at lanes start+4, start+3, start+2, or start+1 (wrapping around)
 

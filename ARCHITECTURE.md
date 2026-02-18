@@ -425,13 +425,13 @@ bun test --coverage
 
 Tests live in `src/lib/__tests__/` alongside the modules they test:
 
-| Test File | Tests |
-|-----------|-------|
-| `chart.test.ts` | Type definitions and validation |
-| `simai.test.ts` | Parser output and edge cases |
-| `visualization.test.ts` | Time conversion |
-| `utils.test.ts` | Utility functions |
-| `error-handling.test.ts` | Error cases |
+| Test File                | Tests                           |
+| ------------------------ | ------------------------------- |
+| `chart.test.ts`          | Type definitions and validation |
+| `simai.test.ts`          | Parser output and edge cases    |
+| `visualization.test.ts`  | Time conversion                 |
+| `utils.test.ts`          | Utility functions               |
+| `error-handling.test.ts` | Error cases                     |
 
 ### Test Helpers
 

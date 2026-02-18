@@ -49,22 +49,24 @@ When you rotate first and then mirror, you're mirroring around the wrong axis! T
 ## Example: 2>5 Circle Slide (Clockwise)
 
 ### Lane Positions (in radians)
+
 - Lane 1: 9/16 × 2π ≈ 3.53 rad (202.5°) - top-left
-- Lane 2: 11/16 × 2π ≈ 4.32 rad (247.5°) - bottom-left  
+- Lane 2: 11/16 × 2π ≈ 4.32 rad (247.5°) - bottom-left
 - Lane 5: 17/16 × 2π ≈ 6.68 rad (382.5° = 22.5°) - top-right
 - Lane 7: 15/16 × 2π ≈ 5.89 rad (337.5°) - bottom-right
 
 ### SVG Path Design
+
 - `Circle_x5F_1` is a CCW arc from lane 1 curving toward lanes 2, 3, 4, 5, 6, 7
 - For a CW slide from lane 1 to lane 5, we mirror this path (flip x coordinates)
 
 ### Current Buggy Flow for Lane 2 CW Slide:
 
 1. **SVG coordinates**: Path starts at lane 1 position (top-left)
-2. **Rotate by laneOffsetAngle** (lane 2 - lane 1 = 45°): 
+2. **Rotate by laneOffsetAngle** (lane 2 - lane 1 = 45°):
    - Path now starts at lane 2 position (bottom-left)
    - Path curves toward lanes 3, 4, 5 (CCW direction from lane 2)
-3. **Mirror (flip x)**: 
+3. **Mirror (flip x)**:
    - Now the path curves toward lanes 1, 8, 7 (CW direction from lane 2)
    - **But wait!** The path is now starting from the wrong side!
    - After rotation to lane 2, flipping x mirrors around the vertical axis through lane 2
@@ -119,11 +121,13 @@ export function transformSlidePoint(
 Matrix multiplication is not commutative: A × B ≠ B × A
 
 **Current (wrong):**
+
 ```
 point_final = Mirror × Rotation × point_svg
 ```
 
 **Correct:**
+
 ```
 point_final = Rotation × Mirror × point_svg
 ```
@@ -131,6 +135,7 @@ point_final = Rotation × Mirror × point_svg
 ### Why Mirror Must Come First
 
 The SVG paths are authored in a specific coordinate system where:
+
 - The y-axis points down (standard SVG)
 - Lane 1 is at the top-left
 - CCW arcs curve "left" (toward increasing lane numbers)
@@ -146,7 +151,9 @@ The `slide-path.hook.ts` file has a separate issue where it tries to compensate 
 ```typescript
 const isLowerHalf = lane >= 3 && lane <= 6;
 const effectiveDirection = isLowerHalf
-  ? direction === "cw" ? "ccw" : "cw"
+  ? direction === "cw"
+    ? "ccw"
+    : "cw"
   : direction;
 ```
 
@@ -163,11 +170,11 @@ To verify the fix works:
 
 ## Summary
 
-| Aspect | Current (Bug) | Correct |
-|--------|-----------------|---------|
-| Mirror timing | After rotation | Before rotation |
-| 2>5 CW result | Starts at lane 7 | Starts at lane 2 |
+| Aspect         | Current (Bug)             | Correct                        |
+| -------------- | ------------------------- | ------------------------------ |
+| Mirror timing  | After rotation            | Before rotation                |
+| 2>5 CW result  | Starts at lane 7          | Starts at lane 2               |
 | Axis of mirror | Rotated coordinate system | Original SVG coordinate system |
-| Fix complexity | Swap 2 code blocks | Simple reordering |
+| Fix complexity | Swap 2 code blocks        | Simple reordering              |
 
 The fix is straightforward: move the mirror flip to happen before the lane rotation in `transformSlidePoint`.

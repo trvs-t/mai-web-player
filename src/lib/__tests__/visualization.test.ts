@@ -736,11 +736,13 @@ describe("Visualization Converter - Chart With Measures", () => {
         const currNote = index.sortedByHitTime[i];
         const prevEnd =
           prevNote.type === "hold"
-            ? prevNote.data.hitTime + (prevNote.data as HoldVisualizeData).duration
+            ? prevNote.data.hitTime +
+              (prevNote.data as HoldVisualizeData).duration
             : prevNote.data.hitTime;
         const currEnd =
           currNote.type === "hold"
-            ? currNote.data.hitTime + (currNote.data as HoldVisualizeData).duration
+            ? currNote.data.hitTime +
+              (currNote.data as HoldVisualizeData).duration
             : currNote.data.hitTime;
         expect(prevEnd).toBeLessThanOrEqual(currEnd);
       }

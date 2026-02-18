@@ -60,6 +60,15 @@ export interface TimeContorl {
   stop: () => void;
 }
 
+export interface ExtendedTimeControl extends TimeContorl {
+  addBookmark: (time: number, label: string) => void;
+  removeBookmark: (id: string) => void;
+  jumpToBookmark: (id: string) => void;
+  setLoopRange: (start: number | null, end: number | null) => void;
+  clearLoop: () => void;
+  stepFrame: (direction: 1 | -1) => void;
+}
+
 export const TimeControlContext = createContext<TimeContorl>({
   setTime: () => {},
   play: () => {},
@@ -104,25 +113,33 @@ export const TimerProvider = ({ children }: { children?: ReactNode }) => {
       time,
       label,
     };
-    setBookmarks((prev) => [...prev, newBookmark].sort((a, b) => a.time - b.time));
+    setBookmarks((prev) =>
+      [...prev, newBookmark].sort((a, b) => a.time - b.time),
+    );
   }, []);
 
   const removeBookmark = useCallback((id: string) => {
     setBookmarks((prev) => prev.filter((b) => b.id !== id));
   }, []);
 
-  const jumpToBookmark = useCallback((id: string) => {
-    const bookmark = bookmarks.find((b) => b.id === id);
-    if (bookmark) {
-      setTime(bookmark.time);
-    }
-  }, [bookmarks]);
+  const jumpToBookmark = useCallback(
+    (id: string) => {
+      const bookmark = bookmarks.find((b) => b.id === id);
+      if (bookmark) {
+        setTime(bookmark.time);
+      }
+    },
+    [bookmarks],
+  );
 
-  const setLoopRange = useCallback((start: number | null, end: number | null) => {
-    setLoopStart(start);
-    setLoopEnd(end);
-    setIsLooping(start !== null && end !== null && start < end);
-  }, []);
+  const setLoopRange = useCallback(
+    (start: number | null, end: number | null) => {
+      setLoopStart(start);
+      setLoopEnd(end);
+      setIsLooping(start !== null && end !== null && start < end);
+    },
+    [],
+  );
 
   const clearLoop = useCallback(() => {
     setLoopStart(null);
@@ -147,14 +164,16 @@ export const TimerProvider = ({ children }: { children?: ReactNode }) => {
     isLooping,
   };
 
-  const control = useMemo<TimeContorl & {
-    addBookmark: (time: number, label: string) => void;
-    removeBookmark: (id: string) => void;
-    jumpToBookmark: (id: string) => void;
-    setLoopRange: (start: number | null, end: number | null) => void;
-    clearLoop: () => void;
-    stepFrame: (direction: 1 | -1) => void;
-  }>(
+  const control = useMemo<
+    TimeContorl & {
+      addBookmark: (time: number, label: string) => void;
+      removeBookmark: (id: string) => void;
+      jumpToBookmark: (id: string) => void;
+      setLoopRange: (start: number | null, end: number | null) => void;
+      clearLoop: () => void;
+      stepFrame: (direction: 1 | -1) => void;
+    }
+  >(
     () => ({
       setTime,
       play,
@@ -168,7 +187,18 @@ export const TimerProvider = ({ children }: { children?: ReactNode }) => {
       clearLoop,
       stepFrame,
     }),
-    [play, pause, reset, stop, addBookmark, removeBookmark, jumpToBookmark, setLoopRange, clearLoop, stepFrame],
+    [
+      play,
+      pause,
+      reset,
+      stop,
+      addBookmark,
+      removeBookmark,
+      jumpToBookmark,
+      setLoopRange,
+      clearLoop,
+      stepFrame,
+    ],
   );
 
   const configValue = useMemo<TimerConfig>(

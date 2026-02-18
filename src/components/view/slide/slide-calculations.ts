@@ -17,7 +17,10 @@ export function calculateDisappearProgress(
 
   // Cap wait time to ensure we have time for sequential fade
   // Wait at most MAX_WAIT_FRACTION of duration, but not more than measureDurationMs
-  const actualWaitTime = Math.min(measureDurationMs, duration * MAX_WAIT_FRACTION);
+  const actualWaitTime = Math.min(
+    measureDurationMs,
+    duration * MAX_WAIT_FRACTION,
+  );
   const disappearStartTime = startTime + actualWaitTime;
   const disappearDuration = endTime - disappearStartTime;
 
@@ -30,9 +33,8 @@ export function calculateDisappearProgress(
   }
 
   // Calculate progress through disappearing phase (0 to 1)
-  const progress = disappearDuration > 0
-    ? (time - disappearStartTime) / disappearDuration
-    : 1;
+  const progress =
+    disappearDuration > 0 ? (time - disappearStartTime) / disappearDuration : 1;
 
   return { phase: "DISAPPEARING", progress: Math.min(1, progress) };
 }

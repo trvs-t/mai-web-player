@@ -170,7 +170,8 @@ export function convertChartVisualizationData(chart: Chart) {
           });
           break;
         case "slide": {
-          const beatDuration = (60000 / (data.duration.bpm ?? currentBpm) / currentDivision) * 4;
+          const beatDuration =
+            (60000 / (data.duration.bpm ?? currentBpm) / currentDivision) * 4;
           const measureDurationMs = beatDuration * currentDivision;
           notes.push({
             type: "slide",
@@ -292,13 +293,17 @@ export function convertChartWithMeasures(chart: Chart): ChartWithMeasures {
           const restBeats = data.divisionCount;
           let remainingRestBeats = restBeats;
           while (remainingRestBeats > 0) {
-            const beatsToCompleteMeasure = currentDivision - beatsInCurrentMeasure;
-            const beatsToUse = Math.min(remainingRestBeats, beatsToCompleteMeasure);
-            
+            const beatsToCompleteMeasure =
+              currentDivision - beatsInCurrentMeasure;
+            const beatsToUse = Math.min(
+              remainingRestBeats,
+              beatsToCompleteMeasure,
+            );
+
             time += beatsToUse * beatDuration;
             beatsInCurrentMeasure += beatsToUse;
             remainingRestBeats -= beatsToUse;
-            
+
             if (beatsInCurrentMeasure >= currentDivision) {
               completeMeasure();
             }
@@ -346,7 +351,8 @@ export function convertChartWithMeasures(chart: Chart): ChartWithMeasures {
           });
           break;
         case "slide": {
-          const beatDuration = (60000 / (data.duration.bpm ?? currentBpm) / currentDivision) * 4;
+          const beatDuration =
+            (60000 / (data.duration.bpm ?? currentBpm) / currentDivision) * 4;
           const measureDurationMs = beatDuration * currentDivision;
           notes.push({
             type: "slide",
@@ -468,7 +474,7 @@ export function createTimeSortedIndex(
 
 function getNoteEndTime(note: NoteVisualization): number {
   const baseTime = (note.data as { hitTime: number }).hitTime;
-  
+
   if (note.type === "hold") {
     return baseTime + (note.data as HoldVisualizeData).duration;
   }
@@ -478,7 +484,7 @@ function getNoteEndTime(note: NoteVisualization): number {
   if (note.type === "slide") {
     return baseTime + (note.data as SlideVisualizationData).duration;
   }
-  
+
   return baseTime;
 }
 
@@ -634,14 +640,19 @@ export function calculateChartStatistics(
     }
   }
 
-  const avgDensity = densityData.length > 0
-    ? densityData.reduce((sum, d) => sum + d.notesPerSecond, 0) / densityData.length
-    : 0;
+  const avgDensity =
+    densityData.length > 0
+      ? densityData.reduce((sum, d) => sum + d.notesPerSecond, 0) /
+        densityData.length
+      : 0;
   const maxDensity = peakDensity.value;
   const noteCountFactor = Math.log10(noteCounts.total + 1) * 2;
-  const estimatedDifficulty = Math.min(15, Math.round(
-    (avgDensity * 0.5 + maxDensity * 0.3 + noteCountFactor * 0.2) / 2
-  ));
+  const estimatedDifficulty = Math.min(
+    15,
+    Math.round(
+      (avgDensity * 0.5 + maxDensity * 0.3 + noteCountFactor * 0.2) / 2,
+    ),
+  );
 
   return {
     noteCounts,

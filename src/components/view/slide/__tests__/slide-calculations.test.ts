@@ -75,24 +75,48 @@ describe("slide-calculations", () => {
         const disappearProgress = 0.5;
 
         // Early arrows should be fully faded
-        const earlyArrow = calculateArrowAlpha(0, totalArrows, "DISAPPEARING", 1, disappearProgress);
+        const earlyArrow = calculateArrowAlpha(
+          0,
+          totalArrows,
+          "DISAPPEARING",
+          1,
+          disappearProgress,
+        );
         expect(earlyArrow.alpha).toBe(0);
         expect(earlyArrow.shouldRender).toBe(false);
 
         // Middle arrows should be fading
-        const midArrow = calculateArrowAlpha(4, totalArrows, "DISAPPEARING", 1, disappearProgress);
+        const midArrow = calculateArrowAlpha(
+          4,
+          totalArrows,
+          "DISAPPEARING",
+          1,
+          disappearProgress,
+        );
         // Threshold = 4/10 = 0.4
         // localProgress = (0.5 - 0.4) / 0.15 = 0.666
         expect(midArrow.alpha).toBeCloseTo(0.333, 2);
 
         // Late arrows should still be visible
-        const lateArrow = calculateArrowAlpha(8, totalArrows, "DISAPPEARING", 1, disappearProgress);
+        const lateArrow = calculateArrowAlpha(
+          8,
+          totalArrows,
+          "DISAPPEARING",
+          1,
+          disappearProgress,
+        );
         expect(lateArrow.alpha).toBe(1);
       });
 
       it("should have all arrows faded at disappearProgress = 1", () => {
         const totalArrows = 10;
-        const lastArrow = calculateArrowAlpha(9, totalArrows, "DISAPPEARING", 1, 1);
+        const lastArrow = calculateArrowAlpha(
+          9,
+          totalArrows,
+          "DISAPPEARING",
+          1,
+          1,
+        );
         // Even the last arrow (threshold 0.9) should be faded at progress 1
         // localProgress = (1 - 0.9) / 0.15 = 0.666
         // alpha = 1 - 0.666 = 0.333

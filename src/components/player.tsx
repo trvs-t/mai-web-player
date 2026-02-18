@@ -64,7 +64,7 @@ export const Player = () => {
     for (let i = 1; i <= 8; i++) {
       byLane[i] = [];
     }
-    
+
     for (const note of visibleNotes) {
       if (note.type === "tap" || note.type === "hold") {
         const lane = (note.data as { lane: number }).lane;
@@ -74,7 +74,7 @@ export const Player = () => {
         byLane[lane]?.push(note);
       }
     }
-    
+
     return byLane;
   }, [visibleNotes]);
 
@@ -103,7 +103,18 @@ export const Player = () => {
             const { hitTime } = typedNote;
             switch (type) {
               case "tap":
-                return <Tap key={`${type}-${i}`} data={note as { lane: number; hitTime: number; isEach?: boolean }} />;
+                return (
+                  <Tap
+                    key={`${type}-${i}`}
+                    data={
+                      note as {
+                        lane: number;
+                        hitTime: number;
+                        isEach?: boolean;
+                      }
+                    }
+                  />
+                );
               case "hold":
                 return (
                   <Hold
@@ -113,7 +124,12 @@ export const Player = () => {
                   />
                 );
               case "slide":
-                return <Star key={`${type}-${i}`} data={note as SlideVisualizationData} />;
+                return (
+                  <Star
+                    key={`${type}-${i}`}
+                    data={note as SlideVisualizationData}
+                  />
+                );
               default:
                 return null;
             }

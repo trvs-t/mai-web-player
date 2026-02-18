@@ -418,9 +418,17 @@ function parseSimaiNote(str: string): Chart["items"] {
   for (const part of parts) {
     const touchMatch = part.match(touchExp);
     if (touchMatch?.groups) {
-      const { zone, position, hold, hanabi, duration, bpm: touchBpm, division: touchDivision, count } =
-        touchMatch.groups;
-      
+      const {
+        zone,
+        position,
+        hold,
+        hanabi,
+        duration,
+        bpm: touchBpm,
+        division: touchDivision,
+        count,
+      } = touchMatch.groups;
+
       const isEndMarker = !position && !hold && zone === "E";
       if (!isEndMarker) {
         const zoneTyped = zone as "A" | "B" | "C" | "D" | "E";
@@ -431,16 +439,26 @@ function parseSimaiNote(str: string): Chart["items"] {
           if (!duration) {
             console.warn("Touch hold without duration");
             parsedBody.push(
-              touchHoldItem(zoneTyped, positionNum, { division: 8, divisionCount: 0 }, isHanabi),
+              touchHoldItem(
+                zoneTyped,
+                positionNum,
+                { division: 8, divisionCount: 0 },
+                isHanabi,
+              ),
             );
             continue;
           }
           parsedBody.push(
-            touchHoldItem(zoneTyped, positionNum, {
-              bpm: touchBpm ? +touchBpm.replace("#", "") : undefined,
-              division: +touchDivision,
-              divisionCount: +count,
-            }, isHanabi),
+            touchHoldItem(
+              zoneTyped,
+              positionNum,
+              {
+                bpm: touchBpm ? +touchBpm.replace("#", "") : undefined,
+                division: +touchDivision,
+                divisionCount: +count,
+              },
+              isHanabi,
+            ),
           );
         } else {
           parsedBody.push(touchItem(zoneTyped, positionNum, isHanabi));
@@ -452,7 +470,12 @@ function parseSimaiNote(str: string): Chart["items"] {
     const noteMatch = part.match(noteExp);
     if (noteMatch?.groups) {
       const { lane, hold, slide, visibility } = noteMatch.groups;
-      const starVisibility = visibility === "?" ? "fadeIn" : visibility === "!" ? "hidden" : "normal";
+      const starVisibility =
+        visibility === "?"
+          ? "fadeIn"
+          : visibility === "!"
+            ? "hidden"
+            : "normal";
       if (hold) {
         const { duration, bpm, division, count } =
           hold.match(holdExp)?.groups ?? {};
@@ -591,12 +614,12 @@ function parseSimaiNoteWithErrors(
     if (touchMatch?.groups) {
       const { zone, position, hold, hanabi, duration, bpm, division, count } =
         touchMatch.groups;
-      
+
       const isEndMarker = !position && !hold && zone === "E";
       if (isEndMarker) {
         continue;
       }
-      
+
       const zoneTyped = zone as "A" | "B" | "C" | "D" | "E";
       const positionNum = position ? +position : 1;
       const isHanabi = !!hanabi;
@@ -613,7 +636,12 @@ function parseSimaiNoteWithErrors(
             ),
           );
           parsedBody.push(
-            touchHoldItem(zoneTyped, positionNum, { division: 8, divisionCount: 0 }, isHanabi),
+            touchHoldItem(
+              zoneTyped,
+              positionNum,
+              { division: 8, divisionCount: 0 },
+              isHanabi,
+            ),
           );
           continue;
         }
@@ -640,11 +668,16 @@ function parseSimaiNoteWithErrors(
           );
         }
         parsedBody.push(
-          touchHoldItem(zoneTyped, positionNum, {
-            bpm: bpm ? +bpm.replace("#", "") : undefined,
-            division: divValue,
-            divisionCount: countValue,
-          }, isHanabi),
+          touchHoldItem(
+            zoneTyped,
+            positionNum,
+            {
+              bpm: bpm ? +bpm.replace("#", "") : undefined,
+              division: divValue,
+              divisionCount: countValue,
+            },
+            isHanabi,
+          ),
         );
       } else {
         parsedBody.push(touchItem(zoneTyped, positionNum, isHanabi));
@@ -655,7 +688,12 @@ function parseSimaiNoteWithErrors(
     const noteMatch = part.match(noteExp);
     if (noteMatch?.groups) {
       const { lane, hold, slide, visibility } = noteMatch.groups;
-      const starVisibility = visibility === "?" ? "fadeIn" : visibility === "!" ? "hidden" : "normal";
+      const starVisibility =
+        visibility === "?"
+          ? "fadeIn"
+          : visibility === "!"
+            ? "hidden"
+            : "normal";
       const laneNum = parseInt(lane, 10);
 
       if (isNaN(laneNum) || laneNum < 1 || laneNum > 8) {

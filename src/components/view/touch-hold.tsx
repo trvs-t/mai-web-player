@@ -30,7 +30,11 @@ export function TouchHold({ data }: { data: TouchHoldVisualizeData }) {
       if (isActive) {
         const remainingRatio = 1 - timeSinceHit / duration;
         g.beginFill(color, 0.5);
-        g.drawCircle(sensorPos.x, baseY, SENSOR_SIZE * (1 + remainingRatio * 0.5));
+        g.drawCircle(
+          sensorPos.x,
+          baseY,
+          SENSOR_SIZE * (1 + remainingRatio * 0.5),
+        );
         g.endFill();
       }
 

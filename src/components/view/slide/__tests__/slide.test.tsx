@@ -26,14 +26,15 @@ describe("Slide Component", () => {
     it("should calculate appearTime correctly", () => {
       const noteDuration = 500; // From PlayerContext default
       const appearTime = mockSlideData.hitTime - noteDuration;
-      
+
       // Slides should appear at hitTime - noteDuration (same as tap)
       expect(appearTime).toBe(500);
     });
 
     it("should calculate disappearStartTime correctly", () => {
       // Disappearing starts 1 measure after startTime
-      const disappearStartTime = mockSlideData.startTime + mockSlideData.measureDurationMs;
+      const disappearStartTime =
+        mockSlideData.startTime + mockSlideData.measureDurationMs;
       expect(disappearStartTime).toBe(3500);
     });
 

@@ -1,5 +1,8 @@
 import { describe, it, expect } from "bun:test";
-import type { SlideAnimationState, AnimationPhase } from "../use-slide-animation";
+import type {
+  SlideAnimationState,
+  AnimationPhase,
+} from "../use-slide-animation";
 
 // Test the animation logic directly without React context
 // by extracting the core calculation logic
@@ -14,10 +17,16 @@ interface TestParams {
   noteDuration: number;
 }
 
-function calculateAnimationState(
-  params: TestParams,
-): SlideAnimationState {
-  const { time, hitTime, startTime, duration, arrowCount, measureDurationMs, noteDuration } = params;
+function calculateAnimationState(params: TestParams): SlideAnimationState {
+  const {
+    time,
+    hitTime,
+    startTime,
+    duration,
+    arrowCount,
+    measureDurationMs,
+    noteDuration,
+  } = params;
   const appearTime = hitTime - noteDuration;
   const endTime = startTime + duration;
   const disappearStartTime = startTime + measureDurationMs;
