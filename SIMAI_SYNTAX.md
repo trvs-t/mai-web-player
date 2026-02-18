@@ -257,6 +257,24 @@ Automatically chooses shortest direction:
 1^5[4:1],    # Circle via shortest path
 ```
 
+**Direction Arrow Semantics:**
+
+The `>` and `<` arrows indicate the **initial direction** of the slide path relative to the start lane's position:
+
+- **Upper half (lanes 7, 8, 1, 2)**: 
+  - `>` creates clockwise arcs
+  - `<` creates counter-clockwise arcs
+  
+- **Lower half (lanes 3, 4, 5, 6)**:
+  - `>` creates counter-clockwise arcs  
+  - `<` creates clockwise arcs
+
+This opposite handling occurs because the visual rotation of the arrow changes based on which side of the circular playfield the slide starts from.
+
+**Auto-direction (`^`)** always selects the shortest arc:
+- `3^6` is equivalent to `3<6` (3 lanes CCW vs 5 lanes CW)
+- `6^3` is equivalent to `6>3` (3 lanes CW vs 5 lanes CCW)
+
 #### 5. U-Shape Clockwise (`q`)
 
 U-shaped curve, clockwise around center:
