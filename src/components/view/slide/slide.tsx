@@ -56,6 +56,7 @@ export function Slide({
     slideType,
     direction,
     destinationDifference,
+    lane,
   });
   const [points, setPoints] = useState<AngledPoint[]>([]);
 
@@ -69,9 +70,13 @@ export function Slide({
 
   const laneRotation = getLaneRotationRadian(lane);
   const laneOffsetAngle = useMemo(() => {
-    // SVG paths are designed for lane 1, so rotate to match actual lane
-    return laneRotation - getLaneRotationRadian(1);
-  }, [laneRotation]);
+    // SVG paths are designed for lane 1 CCW paths
+    // For CW slides, mirroring shifts the start from lane 1 to lane 8
+    // So we need to rotate 1 extra lane (45°) for CW slides
+    const baseOffset = laneRotation - getLaneRotationRadian(1);
+    const cwAdjustment = mirror ? getLaneRotationRadian(2) - getLaneRotationRadian(1) : 0;
+    return baseOffset + cwAdjustment;
+  }, [laneRotation, mirror]);
 
   useEffect(() => {
     if (!path) return;
@@ -116,7 +121,7 @@ export function Slide({
         );
 
         // Calculate chevron angle (point along tangent, not toward center)
-        const chevronAngle = calculateChevronAngle(angledPoint.angle, laneOffsetAngle);
+        const chevronAngle = calculateChevronAngle(angledPoint.angle, laneOffsetAngle, mirror);
 
         drawRotatedChevron(g, x, y, chevronAngle, CHEVRON_SIZE, arrowAlpha);
       }
