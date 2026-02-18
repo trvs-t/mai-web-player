@@ -7,13 +7,7 @@ import { useTimerTween } from "../../../hooks/timer-tween";
 import { PlayerContext } from "../../../contexts/player";
 import { TimerContext } from "../../../contexts/timer";
 import { SlideVisualizationData } from "../../../lib/visualization";
-import { drawStar } from "../graphics";
 import { useSlidePath } from "./slide-path.hook";
-
-const slideWidth = 12,
-  slideHeight = 10;
-
-const slideAppearTime = 400;
 
 export function Slide({
   lane,
@@ -26,7 +20,7 @@ export function Slide({
 }) {
   const { slideType, direction, destinationLane } = data;
   const rotation = getLaneRotationRadian(lane);
-  const timer = useContext(TimerContext);
+  useContext(TimerContext);
   const { radius } = useContext(PlayerContext);
   const destinationDifference = getLaneDifference(lane, destinationLane);
   const { slidePath: path } = useSlidePath({
@@ -54,13 +48,29 @@ export function Slide({
 
       if (visiblePoints.length < 2) return;
 
+      // Transform SVG coordinates to canvas coordinates
+      // SVG viewBox: 0 0 1080 1080, center at (540, 540)
+      // Canvas: center at (0, 0), radius from PlayerContext
+      const svgCenter = 540;
+      const scaleFactor = radius / svgCenter;
+
       g.lineStyle(2, 0xffffff);
-      g.moveTo(visiblePoints[0].point[0], visiblePoints[0].point[1]);
+
+      const transformPoint = (point: [number, number]): [number, number] => {
+        const x = (point[0] - svgCenter) * scaleFactor;
+        const y = (point[1] - svgCenter) * scaleFactor;
+        return [x, y];
+      };
+
+      const startPoint = transformPoint(visiblePoints[0].point);
+      g.moveTo(startPoint[0], startPoint[1]);
+
       for (let i = 1; i < visiblePoints.length; i++) {
-        g.lineTo(visiblePoints[i].point[0], visiblePoints[i].point[1]);
+        const point = transformPoint(visiblePoints[i].point);
+        g.lineTo(point[0], point[1]);
       }
     },
-    [points, progress],
+    [points, progress, radius],
   );
 
   return (
