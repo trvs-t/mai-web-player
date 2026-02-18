@@ -19,6 +19,7 @@ export interface SlideVisualizationData {
   hitTime: number;
   startTime: number;
   duration: number;
+  measureDurationMs: number;
   slideType: SlideType;
   direction: "cw" | "ccw";
   destinationLane: number;
@@ -154,7 +155,9 @@ export function convertChartVisualizationData(chart: Chart) {
             },
           });
           break;
-        case "slide":
+        case "slide": {
+          const beatDuration = (60000 / (data.duration.bpm ?? currentBpm) / currentDivision) * 4;
+          const measureDurationMs = beatDuration * currentDivision;
           notes.push({
             type: "slide",
             data: {
@@ -168,6 +171,7 @@ export function convertChartVisualizationData(chart: Chart) {
                   (data.duration.bpm ?? currentBpm) /
                   data.duration.division) *
                   4),
+              measureDurationMs,
               slideType: data.slideType,
               direction: data.direction,
               destinationLane: data.destinationLane,
@@ -175,6 +179,7 @@ export function convertChartVisualizationData(chart: Chart) {
             },
           });
           break;
+        }
         case "touch":
           notes.push({
             type: "touch",
@@ -326,7 +331,9 @@ export function convertChartWithMeasures(chart: Chart): ChartWithMeasures {
             },
           });
           break;
-        case "slide":
+        case "slide": {
+          const beatDuration = (60000 / (data.duration.bpm ?? currentBpm) / currentDivision) * 4;
+          const measureDurationMs = beatDuration * currentDivision;
           notes.push({
             type: "slide",
             data: {
@@ -340,6 +347,7 @@ export function convertChartWithMeasures(chart: Chart): ChartWithMeasures {
                   (data.duration.bpm ?? currentBpm) /
                   data.duration.division) *
                   4),
+              measureDurationMs,
               slideType: data.slideType,
               direction: data.direction,
               destinationLane: data.destinationLane,
@@ -347,6 +355,7 @@ export function convertChartWithMeasures(chart: Chart): ChartWithMeasures {
             },
           });
           break;
+        }
         case "touch":
           notes.push({
             type: "touch",
