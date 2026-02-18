@@ -54,7 +54,7 @@ export function Slide({
   });
   const [points, setPoints] = useState<AngledPoint[]>([]);
 
-  const { phase, fadeInProgress, isArrowVisible } = useSlideAnimation(
+  const { phase, fadeInProgress, disappearProgress } = useSlideAnimation(
     hitTime,
     startTime,
     duration,
@@ -100,16 +100,7 @@ export function Slide({
         return [x * cos - y * sin, x * sin + y * cos];
       };
 
-      // Calculate alpha for all arrows based on phase
-      let arrowAlpha = 1;
-      if (phase === "FADING_IN") {
-        // All arrows fade in together with same opacity
-        arrowAlpha = Math.max(0, Math.min(1, fadeInProgress));
-      }
-
       for (let i = 0; i < points.length; i++) {
-        if (!isArrowVisible(i)) continue;
-
         const angledPoint = points[i];
         let [x, y] = transformPoint(angledPoint.point);
 
@@ -121,10 +112,25 @@ export function Slide({
           x = -x;
         }
 
+        // Calculate alpha based on phase
+        let arrowAlpha = 1;
+        if (phase === "FADING_IN") {
+          // All arrows fade in together with same opacity
+          arrowAlpha = Math.max(0, Math.min(1, fadeInProgress));
+        } else if (phase === "DISAPPEARING") {
+          // Arrows fade out sequentially from start to end
+          const arrowThreshold = i / points.length;
+          const fadeOutRange = 0.15; // Range over which arrow fades out
+          const localProgress = (disappearProgress - arrowThreshold) / fadeOutRange;
+          arrowAlpha = Math.max(0, Math.min(1, 1 - localProgress));
+        }
+
+        if (arrowAlpha <= 0) continue;
+
         drawRotatedChevron(g, x, y, angledPoint.angle + laneOffsetAngle, CHEVRON_SIZE, arrowAlpha);
       }
     },
-    [points, phase, fadeInProgress, isArrowVisible, radius, laneOffsetAngle, mirror],
+    [points, phase, fadeInProgress, disappearProgress, radius, laneOffsetAngle, mirror],
   );
 
   return (
