@@ -7,6 +7,11 @@ import { useSlideAnimation } from "../../../hooks/use-slide-animation";
 import { PlayerContext } from "../../../contexts/player";
 import { SlideVisualizationData } from "../../../lib/visualization";
 import { useSlidePath } from "./slide-path.hook";
+import {
+  calculateArrowAlpha,
+  calculateChevronAngle,
+  transformSlidePoint,
+} from "./slide-calculations";
 
 const CHEVRON_SIZE = 8;
 
@@ -87,47 +92,33 @@ export function Slide({
       const svgCenter = 540;
       const scaleFactor = radius / svgCenter;
 
-      const transformPoint = (point: [number, number]): [number, number] => {
-        const x = (point[0] - svgCenter) * scaleFactor;
-        const y = (point[1] - svgCenter) * scaleFactor;
-        return [x, y];
-      };
-
-      const rotatePoint = (point: [number, number], angle: number): [number, number] => {
-        const cos = Math.cos(angle);
-        const sin = Math.sin(angle);
-        const [x, y] = point;
-        return [x * cos - y * sin, x * sin + y * cos];
-      };
-
       for (let i = 0; i < points.length; i++) {
         const angledPoint = points[i];
-        let [x, y] = transformPoint(angledPoint.point);
-
-        // Apply lane rotation offset so path starts at correct lane
-        [x, y] = rotatePoint([x, y], laneOffsetAngle);
-
-        // Apply mirror flip for clockwise slides if needed
-        if (mirror) {
-          x = -x;
-        }
 
         // Calculate alpha based on phase
-        let arrowAlpha = 1;
-        if (phase === "FADING_IN") {
-          // All arrows fade in together with same opacity
-          arrowAlpha = Math.max(0, Math.min(1, fadeInProgress));
-        } else if (phase === "DISAPPEARING") {
-          // Arrows fade out sequentially from start to end
-          const arrowThreshold = i / points.length;
-          const fadeOutRange = 0.15; // Range over which arrow fades out
-          const localProgress = (disappearProgress - arrowThreshold) / fadeOutRange;
-          arrowAlpha = Math.max(0, Math.min(1, 1 - localProgress));
-        }
+        const { alpha: arrowAlpha, shouldRender } = calculateArrowAlpha(
+          i,
+          points.length,
+          phase,
+          fadeInProgress,
+          disappearProgress,
+        );
 
-        if (arrowAlpha <= 0) continue;
+        if (!shouldRender) continue;
 
-        drawRotatedChevron(g, x, y, angledPoint.angle + laneOffsetAngle, CHEVRON_SIZE, arrowAlpha);
+        // Transform point from SVG to canvas coordinates
+        const [x, y] = transformSlidePoint(
+          angledPoint.point,
+          svgCenter,
+          scaleFactor,
+          laneOffsetAngle,
+          mirror,
+        );
+
+        // Calculate chevron angle (point along tangent, not toward center)
+        const chevronAngle = calculateChevronAngle(angledPoint.angle, laneOffsetAngle);
+
+        drawRotatedChevron(g, x, y, chevronAngle, CHEVRON_SIZE, arrowAlpha);
       }
     },
     [points, phase, fadeInProgress, disappearProgress, radius, laneOffsetAngle, mirror],
