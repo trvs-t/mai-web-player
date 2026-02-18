@@ -93,7 +93,7 @@ export const Player = () => {
       </Container>
       <Container key="slide">
         {slides.map(({ data }, i) => (
-          <Slide key={`slide-${i}`} lane={data.lane} hitTime={data.hitTime} data={data} />
+          <Slide key={`slide-${i}`} lane={data.lane} data={data} />
         ))}
       </Container>
       {lanes.map((lane) => (

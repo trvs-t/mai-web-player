@@ -2,6 +2,12 @@ import { describe, it, expect } from "bun:test";
 import { parseSimaiChart } from "../simai";
 import {
   convertChartVisualizationData,
+  convertChartWithMeasures,
+  getCurrentMeasure,
+  getMeasureDisplay,
+  createTimeSortedIndex,
+  getVisibleNotes,
+  calculateChartStatistics,
   type NoteVisualization,
   type SlideVisualizationData,
   type HoldVisualizeData,
@@ -396,6 +402,81 @@ describe("Visualization Converter - Property-Based Tests", () => {
         );
       }
     });
+
+    it("should pass monotonicity with 100+ random BPM values", () => {
+      const NUM_RANDOM_TESTS = 150;
+      let allPassed = true;
+      const failures: string[] = [];
+
+      for (let i = 0; i < NUM_RANDOM_TESTS; i++) {
+        const bpm = 60 + Math.random() * 180;
+        const chart = createChart(`(${bpm.toFixed(1)}){4}1,2,3,4,5,E`);
+        const notes = convertChartVisualizationData(chart);
+
+        for (let j = 1; j < notes.length; j++) {
+          if (notes[j].data.hitTime <= notes[j - 1].data.hitTime) {
+            allPassed = false;
+            failures.push(
+              `Test ${i}: BPM ${bpm.toFixed(1)} - time not increasing at note ${j}`,
+            );
+            break;
+          }
+        }
+      }
+
+      if (!allPassed) {
+        console.error("Monotonicity failures:", failures.slice(0, 5));
+      }
+      expect(allPassed).toBe(true);
+    });
+
+    it("should pass monotonicity with 100+ random beat positions", () => {
+      const NUM_RANDOM_TESTS = 120;
+      let allPassed = true;
+
+      for (let i = 0; i < NUM_RANDOM_TESTS; i++) {
+        const numRests = Math.floor(Math.random() * 5);
+        let simai = "(120){4}1";
+        for (let r = 0; r < numRests; r++) {
+          simai += ",";
+        }
+        simai += "2,3,E";
+
+        const chart = createChart(simai);
+        const notes = convertChartVisualizationData(chart);
+
+        for (let j = 1; j < notes.length; j++) {
+          if (notes[j].data.hitTime <= notes[j - 1].data.hitTime) {
+            allPassed = false;
+            break;
+          }
+        }
+      }
+
+      expect(allPassed).toBe(true);
+    });
+
+    it("should verify timing formula consistency for 100+ random BPM values", () => {
+      const NUM_RANDOM_TESTS = 100;
+      let allPassed = true;
+
+      for (let i = 0; i < NUM_RANDOM_TESTS; i++) {
+        const bpm = Math.floor(60 + Math.random() * 180);
+        const chart = createChart(`(${bpm}){4}1,2,E`);
+        const notes = convertChartVisualizationData(chart);
+
+        const expectedBeatDuration = (60000 / bpm / 4) * 4;
+        const actualDiff = notes[1].data.hitTime - notes[0].data.hitTime;
+        const diff = Math.abs(actualDiff - expectedBeatDuration);
+
+        if (diff > 0.1) {
+          allPassed = false;
+          break;
+        }
+      }
+
+      expect(allPassed).toBe(true);
+    });
   });
 
   describe("Floating Point Precision", () => {
@@ -550,5 +631,185 @@ describe("Visualization Converter - Error Handling", () => {
     };
 
     expect(() => convertChartVisualizationData(chart)).toThrow();
+  });
+});
+
+describe("Visualization Converter - Chart With Measures", () => {
+  describe("convertChartWithMeasures", () => {
+    it("should convert chart with measures at constant BPM", () => {
+      const chart = createChart("(120){4}1,2,3,4,E");
+      const result = convertChartWithMeasures(chart);
+
+      expect(result.notes.length).toBe(4);
+      expect(result.measures.length).toBeGreaterThan(0);
+      expect(result.totalDuration).toBeGreaterThan(0);
+    });
+
+    it("should track measure boundaries correctly", () => {
+      const chart = createChart("(120){4}1,2,3,4,E");
+      const result = convertChartWithMeasures(chart);
+
+      expect(result.measures[0].measureNumber).toBe(1);
+      expect(result.measures[0].bpm).toBe(120);
+      expect(result.measures[0].division).toBe(4);
+    });
+
+    it("should handle BPM changes in measures", () => {
+      const chart = createChart("(120){4}1,2,(140){4}3,4,E");
+      const result = convertChartWithMeasures(chart);
+
+      expect(result.measures.length).toBeGreaterThan(1);
+      const bpmChanges = result.measures.filter((m) => m.bpm !== 120);
+      expect(bpmChanges.length).toBeGreaterThan(0);
+    });
+
+    it("should calculate total duration correctly", () => {
+      const chart = createChart("(120){4}1,2,3,4,E");
+      const result = convertChartWithMeasures(chart);
+
+      expect(result.totalDuration).toBe(2500);
+    });
+  });
+
+  describe("getCurrentMeasure", () => {
+    it("should return correct measure for given time", () => {
+      const chart = createChart("(120){4}1,2,3,4,E");
+      const result = convertChartWithMeasures(chart);
+
+      const measure = getCurrentMeasure(result.measures, 0);
+      expect(measure).not.toBeNull();
+      expect(measure?.measureNumber).toBe(1);
+    });
+
+    it("should return null for time before first measure", () => {
+      const chart = createChart("(120){4}1,2,3,4,E");
+      const result = convertChartWithMeasures(chart);
+
+      const measure = getCurrentMeasure(result.measures, -100);
+      expect(measure).toBeNull();
+    });
+
+    it("should return null for time after last measure", () => {
+      const chart = createChart("(120){4}1,2,3,4,E");
+      const result = convertChartWithMeasures(chart);
+
+      const measure = getCurrentMeasure(result.measures, 10000);
+      expect(measure).toBeNull();
+    });
+  });
+
+  describe("getMeasureDisplay", () => {
+    it("should return correct measure display string", () => {
+      const chart = createChart("(120){4}1,2,3,4,E");
+      const result = convertChartWithMeasures(chart);
+
+      const display = getMeasureDisplay(result.measures, 0);
+      expect(display).toMatch(/^M\d+ B\d+$/);
+    });
+
+    it("should return fallback for invalid time", () => {
+      const chart = createChart("(120){4}1,2,3,4,E");
+      const result = convertChartWithMeasures(chart);
+
+      const display = getMeasureDisplay(result.measures, -1000);
+      expect(display).toBe("M-- B-");
+    });
+  });
+
+  describe("createTimeSortedIndex", () => {
+    it("should create sorted index from notes", () => {
+      const chart = createChart("(120){4}1,2,3,4,E");
+      const notes = convertChartVisualizationData(chart);
+      const index = createTimeSortedIndex(notes);
+
+      expect(index.notes.length).toBe(notes.length);
+      expect(index.sortedByHitTime.length).toBe(notes.length);
+    });
+
+    it("should sort notes by end time", () => {
+      const chart = createChart("(120){4}1,2h[4:1],3,4,E");
+      const notes = convertChartVisualizationData(chart);
+      const index = createTimeSortedIndex(notes);
+
+      for (let i = 1; i < index.sortedByHitTime.length; i++) {
+        const prevNote = index.sortedByHitTime[i - 1];
+        const currNote = index.sortedByHitTime[i];
+        const prevEnd =
+          prevNote.type === "hold"
+            ? prevNote.data.hitTime + (prevNote.data as HoldVisualizeData).duration
+            : prevNote.data.hitTime;
+        const currEnd =
+          currNote.type === "hold"
+            ? currNote.data.hitTime + (currNote.data as HoldVisualizeData).duration
+            : currNote.data.hitTime;
+        expect(prevEnd).toBeLessThanOrEqual(currEnd);
+      }
+    });
+  });
+
+  describe("getVisibleNotes", () => {
+    it("should return notes within time window", () => {
+      const chart = createChart("(120){4}1,2,3,4,E");
+      const notes = convertChartVisualizationData(chart);
+      const index = createTimeSortedIndex(notes);
+
+      const visible = getVisibleNotes(index, 500, 1000);
+      expect(visible.length).toBeGreaterThan(0);
+    });
+
+    it("should return empty array for empty notes", () => {
+      const index = createTimeSortedIndex([]);
+      const visible = getVisibleNotes(index, 500, 1000);
+      expect(visible.length).toBe(0);
+    });
+  });
+
+  describe("calculateChartStatistics", () => {
+    it("should calculate note counts correctly", () => {
+      const chart = createChart("(120){4}1,2h[4:1],3-5[4:1],4,E");
+      const notes = convertChartVisualizationData(chart);
+      const stats = calculateChartStatistics(notes, 2000);
+
+      expect(stats.noteCounts.total).toBe(4);
+      expect(stats.noteCounts.tap).toBe(2);
+      expect(stats.noteCounts.hold).toBe(1);
+      expect(stats.noteCounts.slide).toBe(1);
+    });
+
+    it("should calculate total duration", () => {
+      const chart = createChart("(120){4}1,2,3,E");
+      const notes = convertChartVisualizationData(chart);
+      const stats = calculateChartStatistics(notes, 1000);
+
+      expect(stats.totalDuration).toBe(1000);
+    });
+
+    it("should calculate density data", () => {
+      const chart = createChart("(120){4}1,2,3,4,E");
+      const notes = convertChartVisualizationData(chart);
+      const stats = calculateChartStatistics(notes, 2000);
+
+      expect(stats.densityData.length).toBeGreaterThan(0);
+      expect(stats.densityData[0].time).toBe(0);
+      expect(stats.densityData[0].notesPerSecond).toBeGreaterThanOrEqual(0);
+    });
+
+    it("should identify peak density", () => {
+      const chart = createChart("(120){4}1,2,3,4,1,2,3,4,E");
+      const notes = convertChartVisualizationData(chart);
+      const stats = calculateChartStatistics(notes, 4000);
+
+      expect(stats.peakDensity.time).toBeGreaterThanOrEqual(0);
+      expect(stats.peakDensity.value).toBeGreaterThanOrEqual(0);
+    });
+
+    it("should estimate difficulty", () => {
+      const chart = createChart("(120){4}1,2,3,4,1,2,3,4,E");
+      const notes = convertChartVisualizationData(chart);
+      const stats = calculateChartStatistics(notes, 4000);
+
+      expect(stats.estimatedDifficulty).toBeGreaterThan(0);
+      expect(stats.estimatedDifficulty).toBeLessThanOrEqual(15);
+    });
   });
 });
