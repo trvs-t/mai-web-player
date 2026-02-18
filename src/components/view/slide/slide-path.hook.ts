@@ -21,14 +21,25 @@ export const useSlidePath = ({
 }: SlidePathData) => {
   const [slidePath, setSlidePath] = useState<SVGGeometryElement>();
 
-  const indexInType = getSlidePathIndex({
-    slideType,
-    destinationDifference,
-    direction,
-    lane,
-  });
+  // WiFi slides don't use SVG paths - they're calculated dynamically in the slide component
+  const isWiFi = slideType === "WiFi";
+
+  const indexInType = isWiFi
+    ? -1
+    : getSlidePathIndex({
+        slideType,
+        destinationDifference,
+        direction,
+        lane,
+      });
 
   useEffect(() => {
+    // Skip path lookup for WiFi - handled dynamically in slide.tsx
+    if (isWiFi) {
+      setSlidePath(undefined);
+      return;
+    }
+
     const pathId = getSlidePathId(slideType, indexInType);
 
     if (pathId === undefined) {
@@ -48,7 +59,7 @@ export const useSlidePath = ({
       console.warn(`Slide path not found: #${pathId} for ${slideType} slide`);
       setSlidePath(undefined);
     }
-  }, [slideType, indexInType]);
+  }, [slideType, indexInType, isWiFi]);
 
   return useMemo(
     () => ({ slidePath, mirror: direction === "cw" }),

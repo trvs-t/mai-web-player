@@ -14,6 +14,7 @@ import {
 } from "./slide-calculations";
 
 const CHEVRON_SIZE = 8;
+const WIFI_CHEVRON_SIZE = 14;
 
 function drawRotatedChevron(
   g: PixiGraphics,
@@ -52,8 +53,10 @@ export function Slide({
   const { slideType, direction, destinationLane, hitTime, startTime, duration, measureDurationMs } = data;
   const { radius } = useContext(PlayerContext);
   const destinationDifference = getLaneDifference(lane, destinationLane);
+  // WiFi uses straight slide path for movement, but renders with fanned arrows
+  const pathSlideType = slideType === "WiFi" ? "Straight" : slideType;
   const { slidePath: path, mirror } = useSlidePath({
-    slideType,
+    slideType: pathSlideType,
     direction,
     destinationDifference,
     lane,
@@ -79,9 +82,10 @@ export function Slide({
   }, [laneRotation, mirror]);
 
   useEffect(() => {
-    if (!path) return;
-    const sampledPoints = splitPath(path, 20);
-    setPoints(sampledPoints);
+    if (path) {
+      const sampledPoints = splitPath(path, 20);
+      setPoints(sampledPoints);
+    }
   }, [path]);
 
   const draw = useCallback(
@@ -97,13 +101,18 @@ export function Slide({
       const svgCenter = 540;
       const scaleFactor = radius / svgCenter;
 
-      for (let i = 0; i < points.length; i++) {
+      // For WiFi, sample fewer points for wider visual spread
+      const step = slideType === "WiFi" ? 2 : 1;
+
+      for (let i = 0; i < points.length; i += step) {
         const angledPoint = points[i];
 
-        // Calculate alpha based on phase
+        const effectiveIndex = Math.floor(i / step);
+        const totalArrows = slideType === "WiFi" ? Math.ceil(points.length / step) : points.length;
+
         const { alpha: arrowAlpha, shouldRender } = calculateArrowAlpha(
-          i,
-          points.length,
+          effectiveIndex,
+          totalArrows,
           phase,
           fadeInProgress,
           disappearProgress,
@@ -111,8 +120,7 @@ export function Slide({
 
         if (!shouldRender) continue;
 
-        // Transform point from SVG to canvas coordinates
-        const [x, y] = transformSlidePoint(
+        const [baseX, baseY] = transformSlidePoint(
           angledPoint.point,
           svgCenter,
           scaleFactor,
@@ -120,13 +128,19 @@ export function Slide({
           mirror,
         );
 
-        // Calculate chevron angle (point along tangent, not toward center)
         const chevronAngle = calculateChevronAngle(angledPoint.angle, laneOffsetAngle, mirror);
 
-        drawRotatedChevron(g, x, y, chevronAngle, CHEVRON_SIZE, arrowAlpha);
+        if (slideType === "WiFi") {
+          // Arrow fans out from small (start) to large (covers lanes 4,5,6 at destination)
+          const progress = totalArrows > 1 ? effectiveIndex / (totalArrows - 1) : 0;
+          const wifiSize = 4 + progress * (WIFI_CHEVRON_SIZE - 4);
+          drawRotatedChevron(g, baseX, baseY, chevronAngle, wifiSize, arrowAlpha);
+        } else {
+          drawRotatedChevron(g, baseX, baseY, chevronAngle, CHEVRON_SIZE, arrowAlpha);
+        }
       }
     },
-    [points, phase, fadeInProgress, disappearProgress, radius, laneOffsetAngle, mirror],
+    [points, phase, fadeInProgress, disappearProgress, radius, laneOffsetAngle, mirror, slideType],
   );
 
   return (
