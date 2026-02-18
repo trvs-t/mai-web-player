@@ -1,114 +1,217 @@
-# Mai Web Player - Knowledge Base
+# Mai Web Player - Agent Guide
 
-**Generated**: 2026-02-17
-**Project**: maimai chart visualizer (TanStack Start + Vite + PixiJS)
+**Project**: maimai chart visualizer (TanStack Start + Vite + PixiJS + Bun)
 
-## OVERVIEW
+## Quick Reference
 
-Web-based chart visualizer for maimai rhythm game. Renders gameplay from simai notation with synchronized audio. Migrated from Next.js to TanStack Start for simpler client-side architecture.
-
-## STRUCTURE
-
-```
-.
-├── src/
-│   ├── routes/          # TanStack Router routes
-│   │   ├── __root.tsx   # Root layout with providers
-│   │   ├── index.tsx    # Home page
-│   │   └── player.tsx   # Main visualizer
-│   ├── contexts/        # React contexts (timer, audio, chart, player)
-│   ├── components/      # React components
-│   │   ├── view/        # PixiJS rendering components
-│   │   └── controls.tsx # Playback controls
-│   ├── lib/             # Simai parser + types
-│   ├── hooks/           # Animation hooks
-│   └── app.tsx          # Application entry point
-├── utils/               # Shared utilities (lane.ts, svg.ts)
-├── public/              # Static assets
-└── dist/                # Vite build output
-```
-
-## WHERE TO LOOK
-
-| Task           | Location                                             | Notes               |
-| -------------- | ---------------------------------------------------- | ------------------- |
-| Add note type  | `src/lib/chart.ts` → `simai.ts` → `components/view/` | See ARCHITECTURE.md |
-| Fix rendering  | `src/components/view/*.tsx`                          | PixiJS components   |
-| Timing issues  | `src/contexts/timer.tsx`                             | ms-based system     |
-| Parser bug     | `src/lib/simai.ts`                                   | Regex patterns      |
-| New slide type | `components/view/slide/slide-paths.tsx`              | SVG path + type     |
-| Route changes  | `src/routes/`                                        | TanStack Router     |
-
-## COMMANDS
+### Commands (Use Bun, not npm)
 
 ```bash
-# Dev (port 3001 with Vite)
-npm run dev
+# Development
+bun run dev          # Vite dev server on port 3001
 
 # Build
-npm run build
+bun run build        # TypeScript + Vite build
+bun run preview      # Preview production build
 
-# Lint with oxlint (Rust-based, fast)
-npm run lint
-npm run lint:fix
+# Code Quality (oxlint/oxfmt - Rust-based, fast)
+bun run lint         # Lint with oxlint
+bun run lint:fix     # Auto-fix lint issues
+bun run format       # Format with oxfmt (80 char width, 2-space)
+bun run format:check # Check formatting
+bun run check        # Full check: tsc + lint + format
 
-# Format with oxfmt (Prettier-compatible, 30x faster)
-npm run format
-npm run format:check
+# Testing (bun:test)
+bun test                      # Run all tests
+bun test --watch              # Watch mode
+bun test --coverage           # With coverage
+bun test --update-snapshots   # Update snapshots
 
-# Type check + lint + format check
-npm run check
+# Run single test file
+bun test src/lib/__tests__/chart.test.ts
 
-# Test (Bun test runner)
-npm run test
-npm run test:watch
+# Run tests matching pattern
+bun test --grep "TapChartData"
 ```
 
-## CONVENTIONS
+## Code Style
 
-- **Contexts**: Separate files per domain (timer.tsx, audio.tsx, chart.ts)
-- **Naming**: kebab-case files, PascalCase components
-- **Imports**: Use `@/` path alias for `src/` directory
-- **Types**: Strict TypeScript, interfaces in lib/chart.ts
-- **Linting**: oxlint with React/TypeScript plugins
-- **Formatting**: oxfmt with 80 char print width, 2-space tabs
+### Imports
+- **Alias**: Use `@/` for `src/`, `@/utils/` for `utils/`
+- **Order**: React → External libs → Internal (`@/`) → Relative (`../`)
+- **Types**: Use `import type { X }` for type-only imports
 
-## ARCHITECTURE NOTES
+```typescript
+import { useState, useCallback } from "react";
+import { Graphics } from "@pixi/react";
+import { PlayerContext } from "@/contexts/player";
+import { getLaneRotationRadian } from "@/utils/lane";
+import type { Chart } from "@/lib/chart";
+```
 
-- **Timing**: Millisecond-based (converted from beats via BPM)
-- **Coordinates**: Polar system centered on screen (8 lanes at 45°)
-- **Rendering**: PixiJS in separate React tree via ContextBridge
-- **Data flow**: simai string → Chart → VisualizationData → render
-- **Router**: TanStack Router with file-based route tree
+### Formatting
+- **Tool**: oxfmt (Prettier-compatible, 30x faster)
+- **Width**: 80 characters
+- **Indent**: 2 spaces (no tabs)
+- **Semicolons**: Required
+- **Quotes**: Double quotes
+- **Trailing commas**: Always
 
-## TESTS
+### Naming
+- **Files**: kebab-case (`timer-context.tsx`)
+- **Components**: PascalCase (`Player`, `TimerControls`)
+- **Hooks**: camelCase starting with `use` (`useTimer`, `useLaneMovement`)
+- **Types/Interfaces**: PascalCase (`TimerConfig`, `ChartData`)
+- **Constants**: UPPER_SNAKE_CASE for true constants
 
-- Bun test runner
-- Files: `src/lib/__tests__/*.test.ts`
-- 6 test files in `src/lib/` subdirs
+### Types (Strict TypeScript)
+- Enable strict mode - no `any` without justification
+- Discriminated unions for note types (`type: "tap" | "hold" | "slide"`)
+- Explicit return types on exported functions
+- No `as` assertions unless absolutely necessary
 
-## ANTI-PATTERNS
+### Error Handling
+- Use custom error types with context
+- Validate inputs at boundaries (parsers, API)
+- Fail fast with clear error messages
+- Never suppress errors silently
 
-- Don't suppress types with `as any` or `@ts-ignore`
-- Don't create Pixi objects in render loop (reuse)
-- Don't use Next.js-specific patterns (this is a Vite SPA)
-- Don't mix sync/async in useEffect without cleanup
+### React Patterns
+- **Contexts**: One file per domain (`timer.tsx`, `audio.tsx`)
+- **Hooks**: Co-locate related logic, extract reusable patterns
+- **Components**: Prefer composition over inheritance
+- **Pixi**: Don't create Graphics in render loop (reuse callbacks)
 
-## EXTERNAL DOCS
+## Testing Strategy
+
+### Test Structure (bun:test)
+
+```typescript
+import { describe, it, expect } from "bun:test";
+import type { Chart } from "../chart";
+
+describe("Feature Name", () => {
+  describe("Sub-feature", () => {
+    it("should do something specific", () => {
+      const result = someFunction();
+      expect(result).toBe(expected);
+    });
+  });
+});
+```
+
+### Test File Organization
+- **Location**: `src/lib/__tests__/*.test.ts` or `src/lib/__tests__/*.test.tsx`
+- **Naming**: `feature.test.ts` (kebab-case)
+- **Helpers**: `src/lib/__tests__/helpers.ts` for shared utilities
+- **Fixtures**: `src/lib/__tests__/fixtures.ts` for test data
+
+### Test Patterns
+- Use `describe` blocks for grouping
+- Test edge cases and error conditions
+- Use snapshots for complex parser output
+- Helper functions should throw descriptive errors
+
+### Running Tests
+```bash
+# Single file
+bun test src/lib/__tests__/chart.test.ts
+
+# Watch mode
+bun test --watch
+
+# With pattern
+bun test --grep "should parse tap"
+
+# Update snapshots
+bun test --update-snapshots
+```
+
+## Project Structure
+
+```
+src/
+├── routes/          # TanStack Router (file-based)
+│   ├── __root.tsx   # Root layout
+│   ├── index.tsx    # Home page
+│   └── player.tsx   # Main visualizer
+├── contexts/        # React contexts
+├── components/      # React components
+│   ├── view/        # PixiJS rendering
+│   └── *.tsx        # UI components
+├── lib/             # Core logic + types
+├── hooks/           # Custom hooks
+└── app.tsx          # Entry point
+
+utils/               # Shared utilities
+public/              # Static assets
+```
+
+## Key Conventions
+
+1. **Timing**: All time values in milliseconds (converted from beats via BPM)
+2. **Coordinates**: Polar system centered on screen (8 lanes at 45° intervals)
+3. **Data Flow**: simai string → Chart → VisualizationData → render
+4. **Pixi Rendering**: Separate React tree bridged via ContextBridge
+
+## Anti-Patterns (Don't Do)
+
+- `as any` or `@ts-ignore` - fix the type issue instead
+- Create Pixi Graphics in render loop - use `useCallback`
+- Mix sync/async in `useEffect` without proper cleanup
+- Use Next.js patterns (this is Vite SPA, not Next.js)
+
+## Lint Rules (oxlint)
+
+- **Plugins**: import, typescript, unicorn, react, react-hooks
+- **Strict**: correctness=error, suspicious=warn, perf=warn
+- **Overrides**: Test files allow `any` and unused vars
+
+## Commit Style (Conventional Commits)
+
+Use semantic prefixes with optional scope:
+
+```
+<type>(<scope>): <description>
+
+[optional body]
+
+[optional footer]
+```
+
+### Types
+- **feat**: New feature
+- **fix**: Bug fix
+- **refactor**: Code change that neither fixes nor adds feature
+- **perf**: Performance improvement
+- **docs**: Documentation only
+- **test**: Tests only
+- **chore**: Build/config/tooling changes
+
+### Scopes (examples)
+- `(timer)`, `(audio)`, `(parser)`, `(slides)`, `(rendering)`
+- `(controls)`, `(export)`, `(pooling)`, `(culling)`
+- `(stats)`, `(player)`, `(bridge)`
+
+### Examples
+```
+feat(slides): add WiFi slide support
+fix(timer): resolve context mismatch in audio sync mode
+refactor(parser): simplify simai tokenization logic
+perf(culling): implement spatial indexing for notes
+docs: update architecture diagram
+```
+
+## External References
 
 - [ARCHITECTURE.md](./ARCHITECTURE.md) - Detailed technical guide
-- [SIMAI_SYNTAX.md](./SIMAI_SYNTAX.md) - Notation reference
-- [TASKS.md](./TASKS.md) - Project roadmap
+- [SIMAI_SYNTAX.md](./SIMAI_SYNTAX.md) - Chart notation reference
+- [TEST_STRATEGY.md](./TEST_STRATEGY.md) - Testing approach
 
-## MIGRATION NOTES
+## Migration Notes
 
 **From Next.js to TanStack Start:**
-
-- `app/player/page.tsx` → `src/routes/player.tsx`
-- `app/player/context/*` → `src/contexts/*`
-- `app/player/data/*` → `src/lib/*`
-- `app/player/animation/*` → `src/hooks/*`
-- `app/player/view/*` → `src/components/view/*`
+- `app/*` → `src/routes/*`
 - `app/layout.tsx` → `src/routes/__root.tsx`
-- No more `use client` directives (all client-side)
-- No more `metadata` exports (use `head()` in routes)
+- No `use client` directives (all client-side)
+- No `metadata` exports (use `head()` in routes)
