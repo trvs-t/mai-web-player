@@ -45,3 +45,6 @@ bun.lockb
 __snapshots__/*.snap.md
 junit.xml
 test-results.xml
+
+# agent tooling
+.sisyphus/

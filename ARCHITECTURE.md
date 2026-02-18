@@ -405,12 +405,43 @@ Add to player context or use React DevTools to inspect:
 ## Testing Changes
 
 ```bash
-# Run type checking
-npm run lint
+# Run all tests
+bun test
 
-# Test with example charts
-# Add console.log in parser to see parsed output
+# Run tests in watch mode
+bun test --watch
+
+# Run specific test file
+bun test src/lib/__tests__/chart.test.ts
+
+# Update snapshots
+bun test --update-snapshots
+
+# Run with coverage
+bun test --coverage
 ```
+
+### Test Structure
+
+Tests live in `src/lib/__tests__/` alongside the modules they test:
+
+| Test File | Tests |
+|-----------|-------|
+| `chart.test.ts` | Type definitions and validation |
+| `simai.test.ts` | Parser output and edge cases |
+| `visualization.test.ts` | Time conversion |
+| `utils.test.ts` | Utility functions |
+| `error-handling.test.ts` | Error cases |
+
+### Test Helpers
+
+Available in `src/lib/__tests__/helpers.ts`:
+
+- `expectValidChart(result)` - Validates chart structure
+- `extractNotes(result)` - Gets all notes from parsed chart
+- `findFirstNoteOfType(result, type)` - Finds first note of type
+
+Fixtures in `src/lib/__tests__/fixtures.ts` provide common test charts.
 
 ## References
 

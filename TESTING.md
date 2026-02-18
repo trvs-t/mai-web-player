@@ -12,7 +12,7 @@ bun test
 bun test --watch
 
 # Run specific test file
-bun test app/player/data/__tests__/chart.test.ts
+bun test src/lib/__tests__/chart.test.ts
 
 # Run tests matching a pattern
 bun test --grep "TapChartData"
@@ -23,13 +23,16 @@ bun test --grep "TapChartData"
 Place test files in `__tests__` directories alongside the code they test. Use the `.test.ts` suffix.
 
 ```
-app/player/data/
+src/lib/
 ├── chart.ts
 ├── simai.ts
+├── visualization.ts
 └── __tests__/
     ├── chart.test.ts      # Tests for chart.ts
     ├── simai.test.ts      # Tests for simai.ts
-    ├── utils.test.ts      # Tests for utils
+    ├── visualization.test.ts
+    ├── utils.test.ts
+    ├── error-handling.test.ts
     ├── fixtures.ts        # Shared test data
     └── helpers.ts         # Test utility functions
 ```
@@ -64,7 +67,7 @@ export function add(a: number, b: number): number {
 Create a test file:
 
 ```typescript
-// app/player/data/__tests__/utils.test.ts
+// src/lib/__tests__/utils.test.ts
 import { describe, it, expect } from "bun:test";
 import { add } from "../utils";
 
@@ -86,7 +89,7 @@ describe("add", () => {
 Run the test:
 
 ```bash
-bun test app/player/data/__tests__/utils.test.ts
+bun test src/lib/__tests__/utils.test.ts
 ```
 
 ## Available Test Utilities
@@ -193,10 +196,23 @@ Run `bun install` to ensure all dependencies are installed.
 
 Press `r` in watch mode to rerun all tests.
 
-### Snapshot tests
+### Snapshot Tests
 
-If the project adds snapshot testing, update snapshots with:
+This project uses snapshot testing for parser output. Snapshots are stored in `__snapshots__/` directories.
+
+**Update snapshots:**
 
 ```bash
 bun test --update-snapshots
 ```
+
+**Write a snapshot test:**
+
+```typescript
+it("should match snapshot for SIMPLE_TAP", () => {
+  const result = parseSimaiChart(SIMPLE_TAP);
+  expect(result).toMatchSnapshot("simple-tap");
+});
+```
+
+**Review snapshot changes before committing.**
