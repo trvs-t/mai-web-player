@@ -134,20 +134,6 @@ function getSlideChar(slideType: string): string {
   }
 }
 
-export function encodeChartForURL(chart: Chart): string {
-  const json = JSON.stringify(chart);
-  return btoa(encodeURIComponent(json));
-}
-
-export function decodeChartFromURL(encoded: string): Chart | null {
-  try {
-    const json = decodeURIComponent(atob(encoded));
-    return JSON.parse(json) as Chart;
-  } catch {
-    return null;
-  }
-}
-
 const LOCAL_STORAGE_KEY = "mai-web-player-autosave";
 
 export function saveToLocalStorage(chart: Chart, simaiText: string) {

@@ -298,6 +298,38 @@ export function parseSimai(
   };
 }
 
+/**
+ * Checks if an error is critical (affects chart rendering capability).
+ * Critical errors: 0 BPM, 0 division, invalid time signature.
+ */
+export function isCriticalError(error: SimaiParseError): boolean {
+  const criticalPatterns = [
+    /BPM must be positive/i,
+    /Invalid BPM value/i,
+    /Invalid division value/i,
+    /Invalid time signature/i,
+  ];
+  return criticalPatterns.some((pattern) => pattern.test(error.message));
+}
+
+/**
+ * Checks if a chart is renderable (has valid time signature with positive BPM and division).
+ */
+export function isChartRenderable(chart: Chart): boolean {
+  if (!chart.items.length) return false;
+
+  const firstItem = chart.items[0];
+  if (Array.isArray(firstItem)) return false;
+  if (firstItem.type !== "timeSignature") return false;
+
+  const { bpm, division } = firstItem.data;
+
+  const hasValidDivision = division > 0;
+  const hasValidBpm = bpm === undefined || bpm > 0;
+
+  return hasValidDivision && hasValidBpm;
+}
+
 export function exportMetadata(metadata: ChartMetadata): string {
   const lines: string[] = [];
 

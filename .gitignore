@@ -15,6 +15,7 @@
 /.vinxi/
 *.tsbuildinfo
 src/routeTree.gen.ts
+.tanstack/
 
 # production
 /build

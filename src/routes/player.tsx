@@ -19,7 +19,12 @@ import { MetadataPanel } from "../components/metadata-panel";
 import { StatisticsPanel } from "../components/statistics-panel";
 import { TimerControls } from "../components/controls";
 import { Chart } from "../lib/chart";
-import { parseSimai, SimaiParseError } from "../lib/simai";
+import {
+  parseSimai,
+  SimaiParseError,
+  isChartRenderable,
+  isCriticalError,
+} from "../lib/simai";
 import { Player } from "../components/player";
 import { Metronome } from "../components/view/metronome";
 import { SlidePaths } from "../components/view/slide/slide-paths";
@@ -27,8 +32,6 @@ import { convertChartWithMeasures } from "../lib/visualization";
 import {
   downloadChart,
   copyToClipboard,
-  encodeChartForURL,
-  decodeChartFromURL,
   saveToLocalStorage,
   loadFromLocalStorage,
   readFileAsText,
@@ -100,6 +103,11 @@ function PlayerPage() {
 
   const [simai, setSimai] = useState<string>("");
   const [parseErrors, setParseErrors] = useState<SimaiParseError[]>([]);
+  const [debouncedParseErrors, setDebouncedParseErrors] = useState<
+    SimaiParseError[]
+  >([]);
+  const [lastValidChart, setLastValidChart] = useState<Chart | null>(null);
+
   const chart: Chart | null = useMemo(() => {
     if (!simai.length) {
       setParseErrors([]);
@@ -107,13 +115,44 @@ function PlayerPage() {
     }
     const result = parseSimai(simai);
     setParseErrors(result.errors);
+
+    if (isChartRenderable(result)) {
+      setLastValidChart(result);
+    }
+
     return result;
   }, [simai]);
 
+  const renderableChart = useMemo(() => {
+    if (!chart) return lastValidChart;
+    return isChartRenderable(chart) ? chart : lastValidChart;
+  }, [chart, lastValidChart]);
+
   const measureData = useMemo(() => {
-    if (!chart) return null;
-    return convertChartWithMeasures(chart);
-  }, [chart]);
+    if (!renderableChart) return null;
+    return convertChartWithMeasures(renderableChart);
+  }, [renderableChart]);
+
+  useEffect(() => {
+    const criticalErrors = parseErrors.filter(isCriticalError);
+    const nonCriticalErrors = parseErrors.filter((e) => !isCriticalError(e));
+
+    if (criticalErrors.length > 0) {
+      setDebouncedParseErrors(criticalErrors);
+      return;
+    }
+
+    if (nonCriticalErrors.length === 0) {
+      setDebouncedParseErrors([]);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setDebouncedParseErrors(nonCriticalErrors);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [parseErrors]);
 
   const [copySuccess, setCopySuccess] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -123,24 +162,11 @@ function PlayerPage() {
     if (saved) {
       setSimai(saved.simaiText);
     }
-    
-    const hash = window.location.hash.slice(1);
-    if (hash) {
-      const decoded = decodeChartFromURL(hash);
-      if (decoded) {
-        const simaiText = loadFromLocalStorage()?.simaiText || "";
-        if (simaiText) {
-          setSimai(simaiText);
-        }
-      }
-    }
   }, []);
 
   useEffect(() => {
     if (!chart) return;
     saveToLocalStorage(chart, simai);
-    const encoded = encodeChartForURL(chart);
-    window.location.hash = encoded;
   }, [chart, simai]);
 
   async function handleCopy() {
@@ -179,19 +205,19 @@ function PlayerPage() {
               noteDuration: 500,
             }}
           >
-            <ChartContext.Provider value={chart}>
+            <ChartContext.Provider value={renderableChart}>
               <TimerProvider>
                 <TimerProviderSelector
                   music={music}
                   audioOffset={audioOffset}
-                  chart={chart}
+                  chart={renderableChart}
                 >
                   <BridgedStage>
                     <Player />
                   </BridgedStage>
                   <TimerControls measures={measureData?.measures} />
                 </TimerProviderSelector>
-                <MetronomeWrapper chart={chart} />
+                <MetronomeWrapper chart={renderableChart} />
               </TimerProvider>
             </ChartContext.Provider>
           </PlayerContext.Provider>
@@ -211,7 +237,7 @@ function PlayerPage() {
             />
           </div>
           <MetadataPanel metadata={chart?.metadata ?? {}} />
-          <StatisticsPanel chart={chart} />
+          <StatisticsPanel chart={renderableChart} />
           <div className="border-t pt-4">
             <label className="block text-sm font-medium mb-2">
               Chart Import/Export
@@ -250,9 +276,9 @@ function PlayerPage() {
           <label className="block text-sm font-medium mb-2">
             Simai Chart Editor
           </label>
-          {parseErrors.length > 0 && (
+          {debouncedParseErrors.length > 0 && (
             <div className="mb-4 space-y-2">
-              {parseErrors.map((error, index) => (
+              {debouncedParseErrors.map((error, index) => (
                 <div
                   key={index}
                   className={`p-3 rounded text-sm border ${
