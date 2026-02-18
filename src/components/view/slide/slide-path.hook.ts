@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { SlideVisualizationData } from "../../../lib/visualization";
 
 type SlidePathData = Pick<SlideVisualizationData, "slideType" | "direction"> & {
@@ -40,7 +40,10 @@ export const useSlidePath = ({
     }
   }, [slideType, indexInType]);
 
-  return { slidePath, mirror: direction === "cw" };
+  return useMemo(
+    () => ({ slidePath, mirror: direction === "cw" }),
+    [slidePath, direction],
+  );
 };
 
 // all paths are counter-clockwise by default
