@@ -29,8 +29,15 @@ export function useSlideAnimation(
   return useMemo(() => {
     const appearTime = hitTime - noteDuration;
     const endTime = startTime + duration;
-    const disappearStartTime = startTime + measureDurationMs;
-    const disappearDuration = duration - measureDurationMs;
+
+    // For sequential fade: we need at least 85% of disappearProgress for last arrow to fade
+    // So we cap the "wait" before starting to fade at 15% of remaining duration
+    // This ensures even short slides have time for sequential disappearance
+    const fadeOutWindowFraction = 0.85; // Last arrow starts fading at 85% progress
+    const maxWaitBeforeFade = duration * (1 - fadeOutWindowFraction);
+    const actualWaitTime = Math.min(measureDurationMs, maxWaitBeforeFade);
+    const disappearStartTime = startTime + actualWaitTime;
+    const disappearDuration = endTime - disappearStartTime;
 
     // BEFORE_START: time < appearTime
     if (time < appearTime) {
