@@ -100,6 +100,13 @@ export function Slide({
         return [x * cos - y * sin, x * sin + y * cos];
       };
 
+      // Calculate alpha for all arrows based on phase
+      let arrowAlpha = 1;
+      if (phase === "FADING_IN") {
+        // All arrows fade in together with same opacity
+        arrowAlpha = Math.max(0, Math.min(1, fadeInProgress));
+      }
+
       for (let i = 0; i < points.length; i++) {
         if (!isArrowVisible(i)) continue;
 
@@ -114,15 +121,7 @@ export function Slide({
           x = -x;
         }
 
-        const arrowThreshold = i / points.length;
-        let alpha = 1;
-        if (phase === "FADING_IN") {
-          const fadeRange = 0.1;
-          const localProgress = (fadeInProgress - arrowThreshold) / fadeRange;
-          alpha = Math.max(0, Math.min(1, localProgress));
-        }
-
-        drawRotatedChevron(g, x, y, angledPoint.angle + laneOffsetAngle, CHEVRON_SIZE, alpha);
+        drawRotatedChevron(g, x, y, angledPoint.angle + laneOffsetAngle, CHEVRON_SIZE, arrowAlpha);
       }
     },
     [points, phase, fadeInProgress, isArrowVisible, radius, laneOffsetAngle, mirror],
