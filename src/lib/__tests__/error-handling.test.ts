@@ -159,7 +159,7 @@ describe("Simai Parser - Error Handling", () => {
     });
 
     it("should detect WiFi slide with wrong endpoint", () => {
-      // WiFi slides (w) need endpoints that are 3 lanes apart
+      // WiFi slides (w) need endpoints that are 4 lanes apart (e.g., 1w5)
       const input = "(120){4}1w2[4:1],E";
       // Should report error about invalid WiFi endpoint
       expect(() => parseSimaiChart(input)).not.toThrow();

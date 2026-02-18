@@ -562,6 +562,45 @@ describe("Simai Parser - L-Shape Slides", () => {
   });
 });
 
+describe("Simai Parser - WiFi Slides", () => {
+  it("should parse WiFi slide with 4-lane distance 1w5[4:1]", () => {
+    const result = parseSimaiChart("(120){4}1w5[4:1],E");
+    const note = findFirstNoteOfType(result, "slide");
+    expect(note).toBeDefined();
+    if (note && isSlideData(note.data)) {
+      expect(note.data.slideType).toBe("WiFi");
+    }
+  });
+
+  it("should parse WiFi slide from all lanes with correct 4-lane distance", () => {
+    for (let start = 1; start <= 8; start++) {
+      const dest = ((start + 3) % 8) + 1;
+      const result = parseSimaiChart(`(120){4}${start}w${dest}[4:1],E`);
+      const note = findFirstNoteOfType(result, "slide");
+      expect(note).toBeDefined();
+      if (note && isSlideData(note.data)) {
+        expect(note.data.slideType).toBe("WiFi");
+      }
+    }
+  });
+
+  it("should accept WiFi slides in both directions (1w5 and 5w1)", () => {
+    const result1 = parseSimaiChart("(120){4}1w5[4:1],E");
+    const note1 = findFirstNoteOfType(result1, "slide");
+    expect(note1).toBeDefined();
+    if (note1 && isSlideData(note1.data)) {
+      expect(note1.data.slideType).toBe("WiFi");
+    }
+
+    const result2 = parseSimaiChart("(120){4}5w1[4:1],E");
+    const note2 = findFirstNoteOfType(result2, "slide");
+    expect(note2).toBeDefined();
+    if (note2 && isSlideData(note2.data)) {
+      expect(note2.data.slideType).toBe("WiFi");
+    }
+  });
+});
+
 describe("Simai Parser - EACH Notes", () => {
   it("should parse EACH with two taps [1/5]", () => {
     const result = parseSimaiChart(EACH_TAP);

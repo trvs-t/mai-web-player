@@ -799,14 +799,15 @@ function parseSimaiNoteWithErrors(
           // Check for WiFi slides
           if (type === "w") {
             const laneDiff = Math.abs(laneNum - destNum);
-            if (laneDiff !== 3 && laneDiff !== 5) {
+            // WiFi slides must be exactly 4 lanes apart (opposite sides of the 8-lane circle)
+            if (laneDiff !== 4) {
               errors.push(
                 new SimaiParseError(
-                  `WiFi slide endpoint must be 3 lanes away from start (got ${laneNum} to ${destNum}).`,
+                  `WiFi slide endpoint must be 4 lanes apart from start (got ${laneNum} to ${destNum}).`,
                   undefined,
                   undefined,
                   "error",
-                  `For WiFi from lane ${laneNum}, use endpoint ${((laneNum + 2) % 8) + 1} or ${((laneNum + 4) % 8) + 1}`,
+                  `For WiFi from lane ${laneNum}, use endpoint ${((laneNum + 3) % 8) + 1}`,
                 ),
               );
             }

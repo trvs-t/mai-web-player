@@ -23,5 +23,5 @@
     "types": ["bun-types", "vite/client"]
   },
   "include": ["src", "utils", "test-setup.ts"],
-  "exclude": ["node_modules", "**/*.test.ts", "**/*.test.tsx"]
+  "exclude": ["node_modules"]
 }

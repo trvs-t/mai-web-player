@@ -320,6 +320,17 @@ With a midpoint button:
 
 Format: `STARTVMIDEND[duration]`
 
+#### 13. WiFi (`w`)
+
+Fan-shaped slide covering 3 lanes from a single start point. The endpoint must be exactly 4 lanes away (opposite side of the circle).
+
+```simai
+1w5[4:1],    # WiFi from 1 covering lanes 4, 5, 6
+3w7[8:3],    # WiFi from 3 covering lanes 6, 7, 8
+```
+
+The endpoint determines which 3 lanes are covered - the endpoint lane plus one lane on each side.
+
 ### SLIDE Durations
 
 Duration notation `[BEATS:COUNT]`:
@@ -576,6 +587,7 @@ E
 | `z`     | Thunder CW         | `1z5[4:1]`       |
 | `v`     | V-shape            | `1v5[4:1]`       |
 | `V`     | L-shape            | `1V35[4:1]`      |
+| `w`     | WiFi slide         | `1w5[4:1]`       |
 | `[N:M]` | Duration           | `[4:1]`, `[8:3]` |
 | `?`     | Fade-in star       | `1?-5[4:1]`      |
 | `!`     | No star            | `1!-5[4:1]`      |
