@@ -59,10 +59,9 @@ export function useSlideAnimation(
         phase: "FADING_IN",
         fadeInProgress,
         disappearProgress: 0,
-        isArrowVisible: (index: number) => {
-          // Show arrows progressively during fade-in
-          const arrowThreshold = index / arrowCount;
-          return fadeInProgress >= arrowThreshold;
+        isArrowVisible: () => {
+          // All arrows visible during fade-in, opacity controlled by fadeInProgress
+          return true;
         },
       };
     }
