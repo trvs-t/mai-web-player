@@ -50,10 +50,9 @@ function calculateAnimationState(
       phase: "FADING_IN" as AnimationPhase,
       fadeInProgress,
       disappearProgress: 0,
-      isArrowVisible: (index: number) => {
-        // Show arrows progressively during fade-in
-        const arrowThreshold = index / arrowCount;
-        return fadeInProgress >= arrowThreshold;
+      isArrowVisible: () => {
+        // All arrows visible during fade-in, opacity controlled by fadeInProgress
+        return true;
       },
     };
   }
@@ -182,12 +181,9 @@ describe("useSlideAnimation", () => {
   });
 
   describe("Arrow Visibility", () => {
-    it("should show arrows progressively during fade-in", () => {
+    it("should show ALL arrows during fade-in with simultaneous appearance", () => {
       // At 700ms: fadeInProgress = (700-500)/500 = 0.4
-      // At 40% progress: arrows with threshold <= 0.4 should be visible
-      // Arrow 0: threshold 0/5 = 0.0, visible
-      // Arrow 1: threshold 1/5 = 0.2, visible
-      // Arrow 2: threshold 2/5 = 0.4, visible (0.4 >= 0.4)
+      // All arrows should be visible during fade-in (opacity controls visibility)
       const state = calculateAnimationState({
         ...baseParams,
         time: 700,
@@ -195,10 +191,28 @@ describe("useSlideAnimation", () => {
 
       expect(state.phase).toBe("FADING_IN");
       expect(state.fadeInProgress).toBeCloseTo(0.4, 1);
-      expect(state.isArrowVisible(0)).toBe(true); // threshold 0.0
-      expect(state.isArrowVisible(1)).toBe(true); // threshold 0.2
-      expect(state.isArrowVisible(2)).toBe(true); // threshold 0.4
-      expect(state.isArrowVisible(3)).toBe(false); // threshold 0.6
+      // All arrows should be visible - opacity is controlled separately
+      expect(state.isArrowVisible(0)).toBe(true);
+      expect(state.isArrowVisible(1)).toBe(true);
+      expect(state.isArrowVisible(2)).toBe(true);
+      expect(state.isArrowVisible(3)).toBe(true);
+      expect(state.isArrowVisible(4)).toBe(true);
+    });
+
+    it("should show all arrows at start of fade-in", () => {
+      const state = calculateAnimationState({
+        ...baseParams,
+        time: 500, // At appearTime
+      });
+
+      expect(state.phase).toBe("FADING_IN");
+      expect(state.fadeInProgress).toBe(0);
+      // All arrows should be visible even at 0% fade
+      expect(state.isArrowVisible(0)).toBe(true);
+      expect(state.isArrowVisible(1)).toBe(true);
+      expect(state.isArrowVisible(2)).toBe(true);
+      expect(state.isArrowVisible(3)).toBe(true);
+      expect(state.isArrowVisible(4)).toBe(true);
     });
 
     it("should show all arrows during VISIBLE phase", () => {
