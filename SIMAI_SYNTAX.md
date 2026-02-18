@@ -319,24 +319,46 @@ Lightning bolt pattern:
 1s5[4:1],    # Thunder CCW
 ```
 
-#### 11. V-Shape (`v`)
+#### 11. V-Shape (`v` - lowercase)
 
-Via the center:
-
-```simai
-1v5[4:1],    # V-shape from 1 to 5 via center
-```
-
-#### 12. L-Shape (`V`)
-
-With a midpoint button:
+V-shaped slide via the center point. Creates a triangular path from start lane to destination lane through the screen center.
 
 ```simai
-1V35[4:1],   # L-shape: 1 -> 3 -> 5
-2V68[8:3],   # L-shape: 2 -> 6 -> 8
+1v5[4:1],    # V-shape from lane 1 to lane 5 via center
+2v6[4:1],    # V-shape from lane 2 to lane 6 via center
 ```
 
-Format: `STARTVMIDEND[duration]`
+**Note:** The SVG paths for V-shapes are indexed by destination difference. Due to missing path data, V-shapes to lane 5 (destination diff 4 from lane 1) are not available.
+
+#### 12. L-Shape (`V` - uppercase)
+
+L-shaped slide with a midpoint button. The path goes from start lane to midpoint, then to destination lane, creating an L-shape.
+
+**Syntax:** `STARTVMIDEND[duration]`
+
+**Midpoint Rules:**
+- The midpoint must be exactly **2 lanes away** from the start lane (±2)
+- Direction is determined by the midpoint position:
+  - **Clockwise (CW):** Midpoint is +2 lanes from start (e.g., lane 1 → lane 3)
+  - **Counter-clockwise (CCW):** Midpoint is -2 lanes from start (e.g., lane 1 → lane 7)
+
+**Examples:**
+
+```simai
+# Clockwise L-shapes (midpoint = start + 2)
+1V35[4:1],   # 1 -> 3 (midpoint) -> 5 (CW direction)
+2V46[4:1],   # 2 -> 4 (midpoint) -> 6 (CW direction)
+3V57[4:1],   # 3 -> 5 (midpoint) -> 7 (CW direction)
+
+# Counter-clockwise L-shapes (midpoint = start - 2)
+1V75[4:1],   # 1 -> 7 (midpoint) -> 5 (CCW direction)
+2V86[4:1],   # 2 -> 8 (midpoint) -> 6 (CCW direction)
+8V26[4:1],   # 8 -> 2 (midpoint) -> 6 (CCW direction)
+```
+
+**Valid End Lanes by Direction:**
+- **CW slides:** End at lanes start+4, start+5, start+6, or start+7 (wrapping around)
+- **CCW slides:** End at lanes start+4, start+3, start+2, or start+1 (wrapping around)
 
 #### 13. WiFi (`w`)
 
