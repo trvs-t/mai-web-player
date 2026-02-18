@@ -14,6 +14,20 @@ export interface ChartWithMeasures {
   totalDuration: number;
 }
 
+/**
+ * Slide timing semantics:
+ * - hitTime: when the tap note reaches the judgment ring
+ * - startTime: when the slide star begins moving (1 beat after hitTime)
+ * - duration: travel time for the slide to move from start to end position
+ * - measureDurationMs: duration of 1 measure (4 beats) at current BPM
+ *
+ * The slide lifecycle:
+ * 1. Slide appears at (hitTime - noteDuration) with tap
+ * 2. Slide fully visible at hitTime, waits 1 beat at judgment ring
+ * 3. Slide starts moving at startTime = hitTime + 1_beat
+ * 4. Slide travels for 'duration' milliseconds to destination
+ * 5. During travel, arrows fade out sequentially from start to end
+ */
 export interface SlideVisualizationData {
   lane: number;
   hitTime: number;
